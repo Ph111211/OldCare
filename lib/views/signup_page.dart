@@ -1,27 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'An Tâm Registration UI',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Roboto', 
-        useMaterial3: true,
-      ),
-      home: const RegisterScreen(),
-    );
-  }
-}
-
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -407,11 +385,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  // **Hiển thị Form động dựa trên _userType**
                   children: [
-                    ..._buildFormFields(), // <--- Gọi hàm xây dựng form
+                    ..._buildFormFields(), 
                     
-                    // 6. Checkbox Điều khoản (Common)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -468,7 +444,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // 7. Nút Đăng ký (Common)
                     SizedBox(
                       width: double.infinity,
                       height: 52,
@@ -500,7 +475,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // 8. Divider "hoặc đăng ký với" (Common)
                     Row(
                       children: [
                         Expanded(child: Divider(color: _borderColor)),
@@ -516,7 +490,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // 9. Nút Social (Google & Facebook) (Common)
                     Row(
                       children: [
                         Expanded(
@@ -541,7 +514,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
 
               const SizedBox(height: 32),
-              // Footer (Common)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -550,7 +522,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.pushNamed(context, '/');
+                    },
                     child: Text(
                       'Đăng nhập',
                       style: TextStyle(

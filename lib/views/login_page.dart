@@ -265,7 +265,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.pushNamed(context, '/signup');
+                      },
                       child: Text(
                         'Đăng ký ngay',
                         style: TextStyle(
