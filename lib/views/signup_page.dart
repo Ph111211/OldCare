@@ -445,34 +445,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 24),
 
                     SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: _agreeToTerms ? () {} : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _primaryColor, 
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          // [SỬA ĐOẠN NÀY]
+                          onPressed: _agreeToTerms ? () {
+                            // Kiểm tra loại tài khoản đang chọn
+                            if (_userType == 'parent') {
+                              // Nếu là Bố mẹ -> Chuyển sang trang Parent
+                              Navigator.pushNamed(context, '/parent'); 
+                            } else {
+                              // Nếu là Con -> Xử lý chuyển sang trang của Con (hoặc về đăng nhập)
+                              // Ví dụ: Navigator.pushNamed(context, '/settings');
+                              print("Đăng ký tài khoản Con");
+                            }
+                          } : null,
+                          
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _primaryColor, 
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Đăng ký',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(Icons.arrow_forward, size: 20),
+                            ],
                           ),
                         ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Đăng ký',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward, size: 20),
-                          ],
-                        ),
                       ),
-                    ),
                     const SizedBox(height: 24),
 
                     Row(
