@@ -10,8 +10,7 @@ class FigmaToCodeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Tắt chữ debug ở góc màn hình
-      theme: ThemeData.light(), // Chuyển về light theme cho giống thiết kế Figma của bạn
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: GiaoDiNChNh(),
       ),
@@ -22,125 +21,136 @@ class FigmaToCodeApp extends StatelessWidget {
 class GiaoDiNChNh extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Sử dụng LayoutBuilder hoặc SingleChildScrollView để tránh lỗi tràn màn hình trên các máy nhỏ
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Container(
-            width: double.infinity, // Tự động giãn theo chiều rộng màn hình
-            height: 960,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment(-0.30, 0.30),
-                end: Alignment(1.30, 0.70),
-                colors: [Color(0xFFEFF6FF), Colors.white, Color(0xFFF0FDF4)],
+    // LayoutBuilder + SingleChildScrollView: "Công thức" để tránh lỗi sọc vàng
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              // Đảm bảo chiều cao tối thiểu bằng màn hình (để hiển thị đẹp trên máy lớn)
+              minHeight: constraints.maxHeight,
+            ),
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFEFF6FF), Colors.white, Color(0xFFF0FDF4)],
+                ),
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+                    children: [
+                      // Phần hiển thị Thời gian
+                      Column(
+                        children: const [
+                          SizedBox(height: 20),
+                          Text(
+                            '14:30',
+                            style: TextStyle(
+                              color: Color(0xFF111827),
+                              fontSize: 80,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -2,
+                              height: 1,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            'Thứ Tư, 19/11/2025',
+                            style: TextStyle(
+                              color: Color(0xFF4B5563),
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 30),
+
+                      Column(
+                        children: [
+                          _buildActionButton(
+                            label: 'SOS KHẨN CẤP',
+                            color: const Color(0xFFEF4444),
+                            icon: Icons.error_outline,
+                            onTap: () {},
+                          ),
+                          const SizedBox(height: 20),
+                          _buildActionButton(
+                            label: 'XÁC NHẬN',
+                            color: const Color(0xFF22C55E),
+                            icon: Icons.check_circle_outline, 
+                            onTap: () {},
+                          ),
+                          const SizedBox(height: 20),
+                          _buildActionButton(
+                            label: 'GỌI CON',
+                            color: const Color(0xFFFF7F50),
+                            icon: Icons.phone_outlined, 
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  ),
+                ),
               ),
             ),
-            child: Stack(
-              children: [
-                // Phần hiển thị Giờ
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 106,
-                  child: Text(
-                    '14:30',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: const Color(0xFF111827),
-                      fontSize: 70,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                // Phần hiển thị Ngày tháng
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 204,
-                  child: Text(
-                    'Thứ Tư, 19/11/2025',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: const Color(0xFF4B5563),
-                      fontSize: 30, // Chỉnh lại một chút cho cân đối
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                // Danh sách các nút chức năng
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 280,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 26),
-                    child: Column(
-                      children: [
-                        // Nút SOS
-                        _buildBigButton(
-                          label: 'SOS KHẨN CẤP',
-                          color: const Color(0xFFEF4444),
-                          onTap: () => print('SOS Pressed'),
-                        ),
-                        const SizedBox(height: 20),
-                        // Nút Xác Nhận
-                        _buildBigButton(
-                          label: 'XÁC NHẬN',
-                          color: const Color(0xFF22C55E),
-                          onTap: () => print('Confirm Pressed'),
-                        ),
-                        const SizedBox(height: 20),
-                        // Nút Gọi Con
-                        _buildBigButton(
-                          label: 'GỌI CON',
-                          color: const Color(0xFFFF7F50),
-                          onTap: () => print('Call Child Pressed'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  // Hàm bổ trợ để tạo các nút bấm cho gọn code
-  Widget _buildBigButton({required String label, required Color color, required VoidCallback onTap}) {
-    return GestureDetector(
+  Widget _buildActionButton({
+    required String label,
+    required Color color,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(16), 
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 40),
-        decoration: ShapeDecoration(
+        height: 140, 
+        decoration: BoxDecoration(
           color: color,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          shadows: const [
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x19000000),
+              color: color.withOpacity(0.3),
               blurRadius: 15,
-              offset: Offset(0, 10),
-              spreadRadius: -3,
-            )
+              offset: const Offset(0, 8),
+            ),
           ],
         ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.bold,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: Colors.white,
+              size: 50,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
       ),
     );
