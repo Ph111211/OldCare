@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 
+// --- 1. HÀM MAIN (Để chạy riêng file này) ---
 void main() {
-  runApp(const FigmaToCodeApp());
+  runApp(const AnTamSettingApp());
 }
 
-// --- 1. ROOT WIDGET ---
-class FigmaToCodeApp extends StatefulWidget {
-  const FigmaToCodeApp({super.key});
+// --- 2. ROOT WIDGET (Quản lý Theme & MaterialApp) ---
+class AnTamSettingApp extends StatefulWidget {
+  const AnTamSettingApp({super.key});
 
   @override
-  State<FigmaToCodeApp> createState() => _FigmaToCodeAppState();
+  State<AnTamSettingApp> createState() => _AnTamSettingAppState();
 }
 
-class _FigmaToCodeAppState extends State<FigmaToCodeApp> {
-  ThemeMode _themeMode = ThemeMode.light;
+class _AnTamSettingAppState extends State<AnTamSettingApp> {
+  // Trạng thái Dark Mode quản lý tại đỉnh ứng dụng
+  bool _isDarkMode = false;
 
   void _toggleTheme(bool isOn) {
     setState(() {
-      _themeMode = isOn ? ThemeMode.dark : ThemeMode.light;
+      _isDarkMode = isOn;
     });
   }
 
@@ -25,57 +27,69 @@ class _FigmaToCodeAppState extends State<FigmaToCodeApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      themeMode: _themeMode,
+      title: 'An Tâm Settings',
+      // Cấu hình Theme Sáng
       theme: ThemeData(
         brightness: Brightness.light,
         scaffoldBackgroundColor: const Color(0xFFF9FAFB),
+        primarySwatch: Colors.blue,
         useMaterial3: true,
-        fontFamily: 'Inter',
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2563EB)),
+        fontFamily: 'Roboto',
       ),
+      // Cấu hình Theme Tối
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF111827),
+        primarySwatch: Colors.blue,
         useMaterial3: true,
-        fontFamily: 'Inter',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2563EB),
-          brightness: Brightness.dark,
-        ),
+        fontFamily: 'Roboto',
       ),
-      home: CITScreen(
+      // Chế độ hiện tại
+      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      
+      // Gọi màn hình chính
+      home: SettingScreen(
+        isDarkMode: _isDarkMode,
         onThemeChanged: _toggleTheme,
-        isDarkMode: _themeMode == ThemeMode.dark,
       ),
     );
   }
 }
 
-class CITScreen extends StatelessWidget {
-  final Function(bool) onThemeChanged;
+// --- 3. MÀN HÌNH SETTING CHÍNH ---
+class SettingScreen extends StatefulWidget {
   final bool isDarkMode;
+  final Function(bool) onThemeChanged;
 
-  const CITScreen({
+  const SettingScreen({
     super.key,
-    required this.onThemeChanged,
     required this.isDarkMode,
+    required this.onThemeChanged,
   });
 
   @override
+  State<SettingScreen> createState() => _SettingScreenState();
+}
+
+class _SettingScreenState extends State<SettingScreen> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: CITContent(
-          onThemeChanged: onThemeChanged,
-          isDarkMode: isDarkMode,
+      // Màu nền sẽ tự động ăn theo theme của MaterialApp
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: CITContent(
+            isDarkMode: widget.isDarkMode,
+            onThemeChanged: widget.onThemeChanged,
+          ),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(isDarkMode: isDarkMode),
+      bottomNavigationBar: BottomNavBar(isDarkMode: widget.isDarkMode),
     );
   }
 }
 
-// --- 2. BOTTOM NAV BAR ---
+// --- 4. BOTTOM NAV BAR ---
 class BottomNavBar extends StatelessWidget {
   final bool isDarkMode;
   const BottomNavBar({super.key, required this.isDarkMode});
@@ -121,11 +135,11 @@ class BottomNavBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF1F2937) : Colors.white,
         border: Border(top: BorderSide(width: 1, color: isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB))),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: const Color(0x19000000),
+            color: Color(0x19000000),
             blurRadius: 15,
-            offset: const Offset(0, 10),
+            offset: Offset(0, 10),
             spreadRadius: -3,
           )
         ],
@@ -150,7 +164,7 @@ class BottomNavBar extends StatelessWidget {
   }
 }
 
-// --- 3. NỘI DUNG CHÍNH ---
+// --- 5. NỘI DUNG CHI TIẾT (Content) ---
 class CITContent extends StatefulWidget {
   final Function(bool) onThemeChanged;
   final bool isDarkMode;
@@ -166,20 +180,18 @@ class CITContent extends StatefulWidget {
 }
 
 class _CITContentState extends State<CITContent> {
-  // --- STATE QUẢN LÝ DỮ LIỆU NGƯỜI DÙNG ---
+  // --- STATE DỮ LIỆU ---
   String _userName = "Nguyễn Văn A";
   String _userEmail = "nguyenvana@email.com";
-  String _userPhone = "0xxx xxx xxx"; // Mặc định
-  String _userAddress = ""; // Mặc định
+  String _userPhone = "09xx xxx xxx"; 
+  String _userAddress = ""; 
 
-  // --- STATE CÁC NÚT BẤM ---
   bool _isMedicineReminderOn = true; 
   bool _isEmergencyOn = true;
   bool _isDailyReportOn = false;
 
-  // --- HÀM HIỂN THỊ DIALOG CHỈNH SỬA ---
+  // --- DIALOG CHỈNH SỬA ---
   void _showEditProfileDialog() {
-    // Tạo controller và gán giá trị hiện tại vào
     final TextEditingController nameController = TextEditingController(text: _userName);
     final TextEditingController emailController = TextEditingController(text: _userEmail);
     final TextEditingController phoneController = TextEditingController(text: _userPhone);
@@ -188,7 +200,6 @@ class _CITContentState extends State<CITContent> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        // Kiểm tra theme bên trong dialog
         final bool isDark = widget.isDarkMode;
         final Color bgColor = isDark ? const Color(0xFF1F2937) : Colors.white;
         final Color textColor = isDark ? Colors.white : const Color(0xFF111827);
@@ -206,14 +217,10 @@ class _CITContentState extends State<CITContent> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header Dialog
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Chỉnh sửa thông tin',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
-                      ),
+                      Text('Chỉnh sửa thông tin', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(Icons.close, color: textColor),
@@ -223,16 +230,11 @@ class _CITContentState extends State<CITContent> {
                     ],
                   ),
                   const SizedBox(height: 20),
-
-                  // Form Fields
                   _buildDialogInput('Họ và tên', nameController, textColor, inputBgColor, borderColor),
                   _buildDialogInput('Email', emailController, textColor, inputBgColor, borderColor),
                   _buildDialogInput('Số điện thoại', phoneController, textColor, inputBgColor, borderColor),
                   _buildDialogInput('Địa chỉ', addressController, textColor, inputBgColor, borderColor, maxLines: 2),
-
                   const SizedBox(height: 24),
-
-                  // Buttons Action
                   Row(
                     children: [
                       Expanded(
@@ -250,7 +252,6 @@ class _CITContentState extends State<CITContent> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            // Cập nhật dữ liệu khi bấm Lưu
                             setState(() {
                               _userName = nameController.text;
                               _userEmail = emailController.text;
@@ -260,7 +261,7 @@ class _CITContentState extends State<CITContent> {
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.save_outlined, color: Colors.white, size: 20),
-                          label: const Text('Lưu thay đổi', style: TextStyle(color: Colors.white)),
+                          label: const Text('Lưu', style: TextStyle(color: Colors.white)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2563EB),
                             padding: const EdgeInsets.symmetric(vertical: 12),
@@ -279,7 +280,6 @@ class _CITContentState extends State<CITContent> {
     );
   }
 
-  // Widget con hỗ trợ tạo Input trong Dialog
   Widget _buildDialogInput(String label, TextEditingController controller, Color textColor, Color bgColor, Color borderColor, {int maxLines = 1}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -296,18 +296,9 @@ class _CITContentState extends State<CITContent> {
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               filled: true,
               fillColor: bgColor,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: borderColor),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: borderColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFF2563EB)),
-              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: borderColor)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: borderColor)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF2563EB))),
             ),
           ),
         ],
@@ -335,98 +326,54 @@ class _CITContentState extends State<CITContent> {
     );
   }
 
-  // --- Header ---
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       decoration: BoxDecoration(
         gradient: widget.isDarkMode 
-            ? const LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [Color(0xFF1F2937), Color(0xFF111827)], 
-              )
-            : const LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)], 
-              ),
+            ? const LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: [Color(0xFF1F2937), Color(0xFF111827)])
+            : const LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)]),
         boxShadow: [
-          BoxShadow(
-            color: widget.isDarkMode ? Colors.black45 : const Color(0x19000000), 
-            blurRadius: 15, 
-            offset: const Offset(0, 10)
-          )
+          BoxShadow(color: widget.isDarkMode ? Colors.black45 : const Color(0x19000000), blurRadius: 15, offset: const Offset(0, 10))
         ],
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.favorite, color: Colors.white, size: 24),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'An Tâm - Con',
-                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      'Chăm sóc Cha Mẹ',
-                      style: TextStyle(
-                        color: widget.isDarkMode ? Colors.white70 : const Color(0xFFDBEAFE), 
-                        fontSize: 13
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Stack(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Icon(Icons.notifications_none, color: Colors.white, size: 26),
-                    ),
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle),
-                      ),
-                    ),
-                  ],
-                ),
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Icon(Icons.call, color: Colors.white, size: 24),
-                ),
-              ],
-            )
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48, height: 48,
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                child: const Icon(Icons.favorite, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('An Tâm - Con', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text('Chăm sóc Cha Mẹ', style: TextStyle(color: widget.isDarkMode ? Colors.white70 : const Color(0xFFDBEAFE), fontSize: 13)),
+                ],
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Stack(
+                children: [
+                  const Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.notifications_none, color: Colors.white, size: 26)),
+                  Positioned(right: 8, top: 8, child: Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle))),
+                ],
+              ),
+              const Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.call, color: Colors.white, size: 24)),
+            ],
+          )
+        ],
       ),
     );
   }
 
-  // --- Khối Tài khoản (Cập nhật để hiển thị biến và nút bấm) ---
   Widget _buildAccountBlock() {
     return _buildCardContainer(
       children: [
@@ -438,20 +385,10 @@ class _CITContentState extends State<CITContent> {
               Row(
                 children: [
                   Container(
-                    width: 50,
-                    height: 50,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]),
-                      shape: BoxShape.circle,
-                    ),
+                    width: 50, height: 50,
+                    decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]), shape: BoxShape.circle),
                     alignment: Alignment.center,
-                    // Lấy 2 chữ cái đầu của tên làm Avatar text
-                    child: Text(
-                      _userName.isNotEmpty 
-                        ? _userName.split(' ').take(2).map((e) => e.isNotEmpty ? e[0] : '').join('') 
-                        : 'NV',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)
-                    ),
+                    child: Text(_userName.isNotEmpty ? _userName.substring(0, 1).toUpperCase() : 'NV', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -466,17 +403,11 @@ class _CITContentState extends State<CITContent> {
                 ],
               ),
               const SizedBox(height: 12),
-              // Nút Chỉnh sửa có sự kiện click
               GestureDetector(
-                onTap: _showEditProfileDialog, // GỌI HÀM MỞ DIALOG
+                onTap: _showEditProfileDialog,
                 child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFF2563EB)),
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.transparent, // Để nhận sự kiện tap
-                  ),
+                  width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(border: Border.all(color: const Color(0xFF2563EB)), borderRadius: BorderRadius.circular(8)),
                   alignment: Alignment.center,
                   child: const Text('Chỉnh sửa', style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w500)),
                 ),
@@ -488,7 +419,6 @@ class _CITContentState extends State<CITContent> {
     );
   }
 
-  // --- Khối Thông báo ---
   Widget _buildNotificationBlock() {
     return _buildCardContainer(
       children: [
@@ -497,25 +427,12 @@ class _CITContentState extends State<CITContent> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              _buildSwitchRow(
-                'Nhắc uống thuốc', 
-                'Khi Cha/Mẹ bỏ lỡ', 
-                _isMedicineReminderOn, 
-                (newValue) {
-                  setState(() {
-                    _isMedicineReminderOn = newValue;
-                  });
-                }
-              ),
-              
+              _buildSwitchRow('Nhắc uống thuốc', 'Khi Cha/Mẹ bỏ lỡ', _isMedicineReminderOn, (val) => setState(() => _isMedicineReminderOn = val)),
               if (_isMedicineReminderOn) ...[
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: widget.isDarkMode ? const Color(0xFF1E3A8A).withOpacity(0.3) : const Color(0xFFEFF6FF), 
-                    borderRadius: BorderRadius.circular(8)
-                  ),
+                  decoration: BoxDecoration(color: widget.isDarkMode ? const Color(0xFF1E3A8A).withOpacity(0.3) : const Color(0xFFEFF6FF), borderRadius: BorderRadius.circular(8)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -524,13 +441,10 @@ class _CITContentState extends State<CITContent> {
                       _buildTimeInput('Trước:', '15', 'phút'),
                       const SizedBox(height: 8),
                       _buildTimeInput('Sau:', '15', 'phút'),
-                      const SizedBox(height: 8),
-                      const Text('Để trống để chỉ nhắc đúng giờ', style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12, color: Colors.grey)),
                     ],
                   ),
                 ),
               ],
-              
               const SizedBox(height: 16),
               _buildSwitchRow('Khẩn cấp', 'Khi bấm SOS', _isEmergencyOn, (val) => setState(() => _isEmergencyOn = val)),
               const SizedBox(height: 16),
@@ -542,7 +456,6 @@ class _CITContentState extends State<CITContent> {
     );
   }
 
-  // --- Khối Giao diện ---
   Widget _buildInterfaceBlock() {
     return _buildCardContainer(
       children: [
@@ -554,6 +467,7 @@ class _CITContentState extends State<CITContent> {
             children: [
               Text('Chế độ tối', style: TextStyle(fontWeight: FontWeight.w600, color: _getTextColor())),
               _buildCustomSwitch(widget.isDarkMode, (value) {
+                // Gọi callback để đổi theme ở cấp Root
                 widget.onThemeChanged(value);
               }),
             ],
@@ -563,7 +477,6 @@ class _CITContentState extends State<CITContent> {
     );
   }
 
-  // --- Khối Hỗ trợ ---
   Widget _buildSupportBlock() {
     return _buildCardContainer(
       children: [
@@ -576,45 +489,23 @@ class _CITContentState extends State<CITContent> {
     );
   }
 
-  // --- Nút Đăng xuất ---
   Widget _buildLogoutBlock() {
     return Container(
-      width: 380,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: _getCardColor(),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _getBorderColor()),
-        boxShadow: const [BoxShadow(color: Color(0x0C000000), blurRadius: 2, offset: Offset(0, 1))],
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.logout, color: Color(0xFFDC2626), size: 20),
-          SizedBox(width: 8),
-          Text('Đăng xuất', style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.bold)),
-        ],
-      ),
+      width: 380, margin: const EdgeInsets.symmetric(horizontal: 16), padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(color: _getCardColor(), borderRadius: BorderRadius.circular(12), border: Border.all(color: _getBorderColor()), boxShadow: const [BoxShadow(color: Color(0x0C000000), blurRadius: 2, offset: Offset(0, 1))]),
+      child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.logout, color: Color(0xFFDC2626), size: 20), SizedBox(width: 8), Text('Đăng xuất', style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.bold))]),
     );
   }
 
-  // --- HELPER FUNCTIONS & WIDGETS ---
-
+  // Helper Methods
   Color _getCardColor() => widget.isDarkMode ? const Color(0xFF1F2937) : Colors.white;
   Color _getTextColor() => widget.isDarkMode ? Colors.white : const Color(0xFF111827);
   Color _getBorderColor() => widget.isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
 
   Widget _buildCardContainer({required List<Widget> children}) {
     return Container(
-      width: 380,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: _getCardColor(),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _getBorderColor()),
-        boxShadow: const [BoxShadow(color: Color(0x0C000000), blurRadius: 2, offset: Offset(0, 1))],
-      ),
+      width: 380, margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(color: _getCardColor(), borderRadius: BorderRadius.circular(12), border: Border.all(color: _getBorderColor()), boxShadow: const [BoxShadow(color: Color(0x0C000000), blurRadius: 2, offset: Offset(0, 1))]),
       child: Column(children: children),
     );
   }
@@ -622,16 +513,8 @@ class _CITContentState extends State<CITContent> {
   Widget _buildCardHeader(String title, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(width: 1, color: widget.isDarkMode ? const Color(0xFF374151) : const Color(0xFFF3F4F6))),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: widget.isDarkMode ? Colors.grey : const Color(0xFF4B5563)),
-          const SizedBox(width: 8),
-          Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: _getTextColor())),
-        ],
-      ),
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(width: 1, color: widget.isDarkMode ? const Color(0xFF374151) : const Color(0xFFF3F4F6)))),
+      child: Row(children: [Icon(icon, size: 20, color: widget.isDarkMode ? Colors.grey : const Color(0xFF4B5563)), const SizedBox(width: 8), Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: _getTextColor()))]),
     );
   }
 
@@ -639,13 +522,7 @@ class _CITContentState extends State<CITContent> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: _getTextColor())),
-            Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-          ],
-        ),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: _getTextColor())), Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12))]),
         _buildCustomSwitch(value, onChanged),
       ],
     );
@@ -655,66 +532,24 @@ class _CITContentState extends State<CITContent> {
     return GestureDetector(
       onTap: () => onChanged(!value),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 48,
-        height: 28,
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          color: value ? const Color(0xFF155DFC) : const Color(0xFFD1D5DC),
-          borderRadius: BorderRadius.circular(20),
-        ),
+        duration: const Duration(milliseconds: 200), width: 48, height: 28, padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(color: value ? const Color(0xFF155DFC) : const Color(0xFFD1D5DC), borderRadius: BorderRadius.circular(20)),
         alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-        child: Container(
-          width: 24,
-          height: 24,
-          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-        ),
+        child: Container(width: 24, height: 24, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
       ),
     );
   }
 
   Widget _buildTimeInput(String label, String time, String unit) {
-    return Row(
-      children: [
-        SizedBox(width: 60, child: Text(label, style: const TextStyle(color: Colors.grey))),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: widget.isDarkMode ? const Color(0xFF374151) : Colors.white,
-              border: Border.all(color: widget.isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(time, style: const TextStyle(color: Colors.grey)),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Text(unit, style: const TextStyle(color: Colors.grey)),
-      ],
-    );
+    return Row(children: [SizedBox(width: 60, child: Text(label, style: const TextStyle(color: Colors.grey))), Expanded(child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), decoration: BoxDecoration(color: widget.isDarkMode ? const Color(0xFF374151) : Colors.white, border: Border.all(color: widget.isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300), borderRadius: BorderRadius.circular(8)), child: Text(time, style: const TextStyle(color: Colors.grey)))), const SizedBox(width: 12), Text(unit, style: const TextStyle(color: Colors.grey))]);
   }
 
   Widget _buildSupportItem(IconData icon, String text, Color bgColor, {bool isLast = false}) {
     final Color iconBg = widget.isDarkMode ? bgColor.withOpacity(0.2) : bgColor;
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        border: isLast ? null : Border(bottom: BorderSide(color: widget.isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB))),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
-            child: Icon(icon, size: 18, color: widget.isDarkMode ? Colors.white : const Color(0xFF2563EB)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Text(text, style: TextStyle(fontWeight: FontWeight.w600, color: _getTextColor()))),
-          const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-        ],
-      ),
+      decoration: BoxDecoration(border: isLast ? null : Border(bottom: BorderSide(color: widget.isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB)))),
+      child: Row(children: [Container(width: 36, height: 36, decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle), child: Icon(icon, size: 18, color: widget.isDarkMode ? Colors.white : const Color(0xFF2563EB))), const SizedBox(width: 12), Expanded(child: Text(text, style: TextStyle(fontWeight: FontWeight.w600, color: _getTextColor()))), const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey)]),
     );
   }
 }
