@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:oldcare/views/seeall.dart';
 
+import 'views/login_page.dart';
+import 'views/signup_page.dart';
 void main() {
   runApp(const FigmaToCodeApp());
 }
@@ -180,7 +182,16 @@ class CaregiverDashboardScreen extends StatelessWidget {
             ],
           ),
         ],
+      title: 'An Tâm Login UI',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        fontFamily: 'Roboto', 
+        useMaterial3: true,
       ),
+    routes: {
+      '/': (context) => const LoginScreen(),
+      '/signup': (context) => const RegisterScreen(),
+    },
     );
   }
 
