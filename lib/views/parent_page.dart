@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// Class chính hiển thị giao diện Bố Mẹ
 class GiaoDiNChNh extends StatelessWidget {
   const GiaoDiNChNh({super.key});
 
