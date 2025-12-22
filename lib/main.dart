@@ -28,3 +28,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+// màn chính ko sửa ở đây.
