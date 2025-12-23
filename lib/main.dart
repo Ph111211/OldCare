@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import 'views/add_schedule.dart';
 import 'views/history_page.dart';
 
+import 'views/login_page.dart';
+import 'views/signup_page.dart';
+import 'views/setting_page.dart';
+import 'views/parent_page.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -18,7 +23,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const AddSchedule(),
+      routes: {
+        '/': (context) => const LoginScreen(),
+        '/signup': (context) => const RegisterScreen(),
+        '/parent': (context) => GiaoDiNChNh(),
+      },
     );
   }
 }
+// màn chính ko sửa ở đây.
