@@ -3,6 +3,8 @@ import 'package:oldcare/views/seeall.dart';
 import 'views/child-dashboard.dart';
 import 'views/login_page.dart';
 import 'views/signup_page.dart';
+import 'views/widgets/popup_add_schedule.dart';
+
 void main() {
   runApp(const FigmaToCodeApp());
 }
@@ -19,7 +21,7 @@ class FigmaToCodeApp extends StatelessWidget {
         fontFamily: 'Inter',
         useMaterial3: true,
       ),
-      home: const ChildDashboard(),
+      home: const ChildDashboard()
     );
   }
 }
