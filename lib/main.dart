@@ -1,9 +1,6 @@
+// import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
-import 'package:oldcare/views/seeall.dart';
-import 'views/child-dashboard.dart';
-import 'views/login_page.dart';
-import 'views/signup_page.dart';
-import 'views/widgets/popup_add_schedule.dart';
+import 'routes/route.dart';
 
 void main() {
   runApp(const FigmaToCodeApp());
@@ -17,12 +14,11 @@ class FigmaToCodeApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFF9FAFB),
-        fontFamily: 'Inter',
-        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const ChildDashboard()
+      initialRoute: '/',
+      routes: appRoutes,
     );
   }
 }
-
+// màn chính ko sửa ở đây.

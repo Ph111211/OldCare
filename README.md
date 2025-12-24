@@ -1,11 +1,4 @@
-# H. Dự án: "An Tâm" – Hệ thống Hỗ trợ Chăm sóc Người cao tuổi
-- Đây là dự án môn phát triển ứng dụng cho thiết bị di động của nhóm chúng tôi gồm các thành viên:
-    - Phạm Đức Phú
-    - Tạ Xuân Phong
-    - Nguyễn Thành Long.
-# Mô tả thông tin về dự án.
-## 1.Tổng quan Dự án (Project Overview) 
-"An Tâm" là một hệ thống ứng dụng "ghép cặp" được thiết kế để kết nối con cái (đang đi làm, bận rộn) với cha mẹ lớn tuổi (sống một mình hoặc ở xa). 
+# oldcare  Phu
 
 Mục tiêu của dự án là giải quyết nỗi lo lắng thường trực của người con ("Không biết bố mẹ ở nhà có ổn không? Đã uống thuốc chưa?") và sự phức tạp về công nghệ đối với người già.
 
