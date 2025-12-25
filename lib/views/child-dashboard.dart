@@ -2,58 +2,55 @@ import 'package:flutter/material.dart';
 
 class ChildDashboard extends StatelessWidget {
   const ChildDashboard({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
-      // Sử dụng SafeArea để tránh bị lẹm vào tai thỏ/nốt ruồi của điện thoại
-      body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  _buildHeader(),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
-                    child: Column(
-                      children: [
-                        _buildWarningCard(),
-                        const SizedBox(height: 20),
-                        _buildQuickStats(),
-                        const SizedBox(height: 24),
-                        _buildMedicationSection(),
-                        const SizedBox(height: 24),
-                        _buildAppointmentSection(),
-                      ],
-                    ),
+      body: Stack(
+        children: [
+          // Phần nội dung có thể cuộn
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      _buildAlertCard(),
+                      const SizedBox(height: 24),
+                      _buildStatGrid(),
+                      const SizedBox(height: 24),
+                      _buildMedicationSchedule(),
+                      const SizedBox(height: 24),
+                      _buildAppointmentSchedule(),
+                      const SizedBox(height: 120), // Khoảng trống để không bị Bottom Nav che
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            _buildCustomBottomNav(),
-          ],
-        ),
+          ),
+          // Bottom Navigation cố định
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _buildBottomNav(),
+          ),
+        ],
       ),
     );
   }
 
-  // 1. Header Blue Gradient
+  // 1. Header Blue Section
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      padding: const EdgeInsets.only(top: 60, left: 16, right: 16, bottom: 24),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
           colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
         ),
       ),
       child: Row(
@@ -61,124 +58,54 @@ class ChildDashboard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
-                ),
-                child: const CircleAvatar(
-                  radius: 22,
-                  backgroundColor: Colors.white24,
-                  child: Icon(Icons.person, color: Colors.white),
-                ),
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: Colors.white.withOpacity(0.2),
+                child: const Icon(Icons.person, color: Colors.white),
               ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'An Tâm - Con',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'Chăm sóc Cha Mẹ',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
-                      fontSize: 13,
-                    ),
-                  ),
+                  const Text('An Tâm - Con',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text('Chăm sóc Cha Mẹ',
+                      style: TextStyle(color: Colors.blue.shade100, fontSize: 13)),
                 ],
               ),
             ],
           ),
-          Row(
-            children: [
-              _headerIconButton(Icons.notifications_none_outlined, true),
-              const SizedBox(width: 12),
-              _headerIconButton(Icons.settings_outlined, false),
-            ],
-          ),
+          const Icon(Icons.notifications_none, color: Colors.white),
         ],
       ),
     );
   }
 
-  Widget _headerIconButton(IconData icon, bool hasNotification) {
-    return Stack(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: Colors.white, size: 22),
-        ),
-        if (hasNotification)
-          Positioned(
-            right: 4,
-            top: 4,
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  // 2. Warning Card
-  Widget _buildWarningCard() {
+  // 2. Alert Card (Cảnh báo chưa uống thuốc)
+  Widget _buildAlertCard() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFFEF2F2),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFCA5A5), width: 1.5),
+        border: Border.all(color: const Color(0xFFEF4444), width: 2),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.warning_rounded, color: Color(0xFFEF4444), size: 28),
+          const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Cảnh báo: Chưa uống thuốc',
-                  style: TextStyle(
-                    color: Color(0xFF991B1B),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Cha/Mẹ chưa xác nhận uống Vitamin D lúc 12:00. Đã quá 30 phút.',
-                  style: TextStyle(color: Color(0xFFB91C1C), fontSize: 13),
-                ),
+                const Text('Cảnh báo: Chưa uống thuốc',
+                    style: TextStyle(color: Color(0xFF7F1D1D), fontWeight: FontWeight.bold, fontSize: 15)),
+                const Text('Cha/Mẹ chưa xác nhận uống Vitamin D lúc 12:00. Đã quá 30 phút.',
+                    style: TextStyle(color: Color(0xFFB91C1C), fontSize: 13)),
                 const SizedBox(height: 8),
-                InkWell(
-                  onTap: () {},
-                  child: const Text(
-                    'Gọi điện ngay',
-                    style: TextStyle(
-                      color: Color(0xFFDC2626),
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
+                Text('Gọi điện ngay',
+                    style: TextStyle(color: Colors.red.shade700, decoration: TextDecoration.underline, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -187,218 +114,133 @@ class ChildDashboard extends StatelessWidget {
     );
   }
 
-  // 3. Quick Stats Grid
-  Widget _buildQuickStats() {
+  // 3. Statistics Grid (90%, 3/3, 2)
+  Widget _buildStatGrid() {
     return Row(
       children: [
-        _statCard('90%', 'Tuân thủ\ntháng này', Icons.check_circle_outline, const Color(0xFFF0FDF4), const Color(0xFF15803D)),
+        _statItem("90%", "Tuân thủ\ntháng này", const Color(0xFFF0FDF4), const Color(0xFF14532D)),
         const SizedBox(width: 12),
-        _statCard('3/3', 'Lịch thuốc\nhôm nay', Icons.medication_outlined, const Color(0xFFEFF6FF), const Color(0xFF1D4ED8)),
+        _statItem("3/3", "Lịch thuốc\nhôm nay", const Color(0xFFEFF6FF), const Color(0xFF1E3A8A)),
         const SizedBox(width: 12),
-        _statCard('2', 'Lịch hẹn\nsắp tới', Icons.calendar_today_outlined, const Color(0xFFFAF5FF), const Color(0xFF7E22CE)),
+        _statItem("2", "Lịch hẹn\nsắp tới", const Color(0xFFFAF5FF), const Color(0xFF581C87)),
       ],
     );
   }
 
-  Widget _statCard(String val, String label, IconData icon, Color bg, Color textCol) {
+  Widget _statItem(String value, String label, Color bg, Color textColor) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: textCol.withOpacity(0.1)),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: textColor.withOpacity(0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: textCol, size: 24),
-            const SizedBox(height: 12),
-            Text(val, style: TextStyle(color: textCol, fontSize: 22, fontWeight: FontWeight.bold)),
+            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
             const SizedBox(height: 4),
-            Text(label, style: TextStyle(color: textCol.withOpacity(0.8), fontSize: 11, height: 1.2)),
+            Text(label, style: TextStyle(fontSize: 11, color: textColor.withOpacity(0.8))),
           ],
         ),
       ),
     );
   }
 
-  // 4. Medication Section
-  Widget _buildMedicationSection() {
-    return _sectionWrapper(
-      title: 'Lịch uống thuốc hôm nay',
-      onViewAll: () {},
-      child: Column(
-        children: [
-          _medicationTile('Thuốc Huyết áp', '08:00 • 1 viên', 'Đã uống lúc 08:05', Colors.green, Icons.done_all),
-          _divider(),
-          _medicationTile('Vitamin D', '12:00 • 1 viên', 'Bỏ lỡ', Colors.red, Icons.close),
-          _divider(),
-          _medicationTile('Thuốc Tiểu đường', '18:00 • 2 viên', 'Chưa đến giờ', Colors.orange, Icons.access_time),
-        ],
-      ),
+  // 4. Medication List
+  Widget _buildMedicationSchedule() {
+    return _buildSectionCard(
+      title: "Lịch uống thuốc hôm nay",
+      children: [
+        _medItem("Thuốc Huyết áp", "08:00 • 1 viên", "Đã uống lúc 08:05", Colors.green),
+        _medItem("Vitamin D", "12:00 • 1 viên", "Bỏ lỡ", Colors.red),
+      ],
     );
   }
 
-  Widget _medicationTile(String name, String info, String status, Color col, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: col.withOpacity(0.1), shape: BoxShape.circle),
-            child: Icon(Icons.pill, color: col, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                Text(info, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: col.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                Icon(icon, color: col, size: 14),
-                const SizedBox(width: 4),
-                Text(status, style: TextStyle(color: col, fontSize: 11, fontWeight: FontWeight.w600)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 5. Appointment Section
-  Widget _buildAppointmentSection() {
-    return _sectionWrapper(
-      title: 'Lịch hẹn sắp tới',
-      onViewAll: () {},
-      child: Column(
-        children: [
-          _appointmentTile('15', 'Th 11', 'Tái khám Tim mạch', 'BS. Nguyễn Văn A'),
-          _divider(),
-          _appointmentTile('20', 'Th 11', 'Xét nghiệm máu', 'Phòng khám Bình An'),
-        ],
-      ),
-    );
-  }
-
-  Widget _appointmentTile(String day, String month, String title, String sub) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                Text(month, style: const TextStyle(fontSize: 10, color: Color(0xFF2563EB), fontWeight: FontWeight.bold)),
-                Text(day, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A))),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                const SizedBox(height: 2),
-                Text(sub, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-              ],
-            ),
-          ),
-          const Icon(Icons.chevron_right, color: Colors.grey),
-        ],
-      ),
+  // 5. Appointment List
+  Widget _buildAppointmentSchedule() {
+    return _buildSectionCard(
+      title: "Lịch hẹn sắp tới",
+      children: [
+        _appointmentItem("Tái khám Tim mạch", "15 Th 11 • 09:00", "BS. Nguyễn Văn A"),
+      ],
     );
   }
 
   // Helper Widgets
-  Widget _sectionWrapper({required String title, required VoidCallback onViewAll, required Widget child}) {
+  Widget _buildSectionCard({required String title, required List<Widget> children}) {
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 5)),
-        ],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
-              TextButton(onPressed: onViewAll, child: const Text('Xem tất cả', style: TextStyle(color: Color(0xFF2563EB), fontSize: 13))),
-            ],
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
-          child,
+          const Divider(height: 1),
+          ...children,
         ],
       ),
     );
   }
 
-  Widget _divider() => Divider(color: Colors.grey.withOpacity(0.1), height: 1);
-
-  // 6. Custom Bottom Nav
-  Widget _buildCustomBottomNav() {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, -5))],
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _navItem(Icons.grid_view_rounded, 'Tổng quan', true),
-            _navItem(Icons.add_circle_outline_rounded, 'Thêm lịch', false),
-            _navItem(Icons.history_rounded, 'Lịch sử', false),
-            _navItem(Icons.person_outline_rounded, 'Cài đặt', false),
-          ],
-        ),
+  Widget _medItem(String name, String info, String status, Color color) {
+    return ListTile(
+      title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+      subtitle: Text(info),
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+        child: Text(status, style: TextStyle(color: color, fontSize: 12)),
       ),
     );
   }
 
-  Widget _navItem(IconData icon, String label, bool isActive) {
+  Widget _appointmentItem(String title, String date, String doctor) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
+        child: const Icon(Icons.calendar_today, color: Colors.blue),
+      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      subtitle: Text("$date\n$doctor"),
+      isThreeLine: true,
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return Container(
+      height: 80,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _navItem(Icons.dashboard, "Tổng quan", true),
+          _navItem(Icons.add_box, "Thêm lịch", false),
+          _navItem(Icons.history, "Lịch sử", false),
+          _navItem(Icons.settings, "Cài đặt", false),
+        ],
+      ),
+    );
+  }
+
+  Widget _navItem(IconData icon, String label, bool active) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, color: isActive ? const Color(0xFF2563EB) : const Color(0xFF9CA3AF), size: 26),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            color: isActive ? const Color(0xFF2563EB) : const Color(0xFF9CA3AF),
-          ),
-        ),
+        Icon(icon, color: active ? Colors.blue : Colors.grey),
+        Text(label, style: TextStyle(color: active ? Colors.blue : Colors.grey, fontSize: 10)),
       ],
     );
   }
