@@ -953,7 +953,6 @@ class _CITContentState extends State<CITContent> {
               ),
             ),
           ),
-          const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
         ],
       ),
     );
