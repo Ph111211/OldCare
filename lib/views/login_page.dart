@@ -198,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 52,
                         child: ElevatedButton(
                           onPressed: () {
-                            authViewModel.login(_emailController.toString(), _passwordController.toString());
+                            authViewModel.login(_emailController.text, _passwordController.text);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _primaryColor,
