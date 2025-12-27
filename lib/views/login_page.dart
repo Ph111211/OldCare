@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/auth/auth_service.dart';
+import '../viewmodels/auth.viewmodel.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -8,6 +10,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  AuthViewModel authViewModel = AuthViewModel(AuthService());
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  
+
   bool _obscurePassword = true;
   bool _rememberMe = false;
 
@@ -101,6 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _buildLabel('Email'),
                       const SizedBox(height: 8),
                       TextFormField(
+                        controller: _emailController,
                         decoration: _inputDecoration(
                           hint: 'your.email@example.com',
                           prefixIcon: Icons.email_outlined,
@@ -113,6 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _buildLabel('Mật khẩu'),
                       const SizedBox(height: 8),
                       TextFormField(
+                        controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: _inputDecoration(
                           hint: '••••••••',
@@ -188,7 +197,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            authViewModel.login(_emailController.toString(), _passwordController.toString());
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _primaryColor,
                             foregroundColor: Colors.white,
