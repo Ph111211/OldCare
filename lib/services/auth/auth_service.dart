@@ -1,13 +1,18 @@
 import 'dart:async';
 import 'dart:developer';
+import 'package:flutter/material.dart';
+
 import '../../../models/user.model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../views/login_page.dart';
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   AuthService();
+
+  BuildContext? get context => null;
   // LOGIN
   Future<User_App> login(String email, String password) async {
     final credential = await _auth.signInWithEmailAndPassword(

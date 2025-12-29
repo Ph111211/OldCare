@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oldcare/views/login_page.dart';
 import '../models/user.model.dart';
 import '../services/auth/auth_service.dart';
 
@@ -74,6 +75,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   void logout() async {
+    // MaterialPageRoute(builder: (_) => LoginScreen());
     await _authService.logout();
     user = null;
     notifyListeners();

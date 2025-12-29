@@ -5,6 +5,9 @@ import 'package:oldcare/viewmodels/schedulePill/schedulePill.viewmodel.dart';
 import 'package:oldcare/viewmodels/schedule/schedule.viewmodel.dart';
 import 'package:oldcare/services/schedulePhill/schedule_Pill.service.dart';
 import 'package:oldcare/services/schedule/schedule.service.dart';
+import 'package:oldcare/views/child-dashboard.dart';
+import 'package:oldcare/views/history_page.dart';
+import 'package:oldcare/views/setting_page.dart';
 import 'package:provider/provider.dart';
 
 class AddSchedule extends StatefulWidget {
@@ -17,7 +20,7 @@ class AddSchedule extends StatefulWidget {
 class _AddScheduleState extends State<AddSchedule> {
   late final SchedulePillViewModel _schedulePillViewModel;
   late final ScheduleViewModel _scheduleViewModel;
-
+  int _currentIndex = 1;
   @override
   void initState() {
     super.initState();
@@ -530,20 +533,57 @@ class _AddScheduleState extends State<AddSchedule> {
 
   Widget _buildBottomNav() {
     return BottomNavigationBar(
-      currentIndex: 1,
       type: BottomNavigationBarType.fixed,
-      items: const [
+      selectedItemColor: const Color(0xFF2563EB),
+      unselectedItemColor: Colors.grey,
+      currentIndex: _currentIndex,
+      onTap: _onBottomNavTapped,
+      items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard),
+          icon: const Icon(Icons.dashboard),
           label: 'Tổng quan',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add_circle),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.add_circle_outline),
           label: 'Thêm lịch',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Lịch sử'),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Cài đặt'),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.history),
+          label: 'Lịch sử',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: 'Cài đặt',
+        ),
       ],
+    );
+  }
+
+  void _onBottomNavTapped(int index) {
+    if (index == _currentIndex) return;
+
+    Widget nextScreen;
+
+    switch (index) {
+      case 0:
+        nextScreen = const ChildDashboard();
+        break;
+      case 1:
+        nextScreen = const AddSchedule();
+        break;
+      case 2:
+        nextScreen = const HistoryScreen();
+        break;
+      case 3:
+        nextScreen = const AnTamSettingApp();
+        break;
+      default:
+        return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => nextScreen),
     );
   }
 }

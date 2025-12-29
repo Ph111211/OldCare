@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../views/add_schedule.dart';
+import '../views/child-dashboard.dart';
+import '../views/setting_page.dart';
+import '../views/history_page.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -30,26 +34,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
     debugPrint('Loading history data...');
   }
 
-  void _onBottomNavTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+  // void _onBottomNavTapped(int index) {
+  //   setState(() {
+  //     _currentIndex = index;
+  //   });
 
-    switch (index) {
-      case 0:
-        debugPrint('Navigate to Dashboard');
-        break;
-      case 1:
-        debugPrint('Navigate to Add Schedule');
-        break;
-      case 2:
-        debugPrint('Already on History');
-        break;
-      case 3:
-        debugPrint('Navigate to Settings');
-        break;
-    }
-  }
+  //   switch (index) {
+  //     case 0:
+  //       debugPrint('Navigate to Dashboard');
+  //       break;
+  //     case 1:
+  //       debugPrint('Navigate to Add Schedule');
+  //       break;
+  //     case 2:
+  //       debugPrint('Already on History');
+  //       break;
+  //     case 3:
+  //       debugPrint('Navigate to Settings');
+  //       break;
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -270,18 +274,52 @@ class _HistoryScreenState extends State<HistoryScreen> {
       unselectedItemColor: Colors.grey,
       currentIndex: _currentIndex,
       onTap: _onBottomNavTapped,
-      items: const <BottomNavigationBarItem>[
+      items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard),
+          icon: const Icon(Icons.dashboard),
           label: 'Tổng quan',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.add_circle_outline),
           label: 'Thêm lịch',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Lịch sử'),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Cài đặt'),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.history),
+          label: 'Lịch sử',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: 'Cài đặt',
+        ),
       ],
+    );
+  }
+
+  void _onBottomNavTapped(int index) {
+    if (index == _currentIndex) return;
+
+    Widget nextScreen;
+
+    switch (index) {
+      case 0:
+        nextScreen = const ChildDashboard();
+        break;
+      case 1:
+        nextScreen = const AddSchedule();
+        break;
+      case 2:
+        nextScreen = const HistoryScreen();
+        break;
+      case 3:
+        nextScreen = const AnTamSettingApp();
+        break;
+      default:
+        return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => nextScreen),
     );
   }
 
