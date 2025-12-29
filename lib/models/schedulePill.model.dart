@@ -3,10 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class SchedulePill {
   final String id;
   final String medicineName;
-  final String time; // HH:mm (08:00)
-  final String dosage; // 1 viên
-  final ScheduleFrequency frequency;
-  final DateTime createdAt;
+  final String time;
+  final String dosage;
+  final String frequency;
+  final String parentId;
+  final String childId;
 
   SchedulePill({
     required this.id,
@@ -14,82 +15,31 @@ class SchedulePill {
     required this.time,
     required this.dosage,
     required this.frequency,
-    required this.createdAt,
+    required this.parentId,
+    required this.childId,
   });
 
-  /// Convert JSON → Schedule
-  factory SchedulePill.fromJson(Map<String, dynamic> json) {
-    return SchedulePill(
-      id: json['id'] as String,
-      medicineName: json['medicineName'] as String,
-      time: json['time'] as String,
-      dosage: json['dosage'] as String,
-      frequency: ScheduleFrequencyExtension.fromString(json['frequency']),
-      createdAt: DateTime.parse(json['createdAt']),
-    );
-  }
-
-  /// Convert Firestore Document → Schedule
-  factory SchedulePill.fromFirestore(String id, Map<String, dynamic> data) {
+  factory SchedulePill.fromMap(String id, Map<String, dynamic> map) {
     return SchedulePill(
       id: id,
-      medicineName: data['medicineName'],
-      time: data['time'],
-      dosage: data['dosage'],
-      frequency: ScheduleFrequencyExtension.fromString(data['frequency']),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      medicineName: map['medicineName'],
+      time: map['time'],
+      dosage: map['dosage'],
+      frequency: map['frequency'],
+      parentId: map['parentId'],
+      childId: map['childId'],
     );
   }
 
-  /// Convert Schedule → JSON
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'medicineName': medicineName,
       'time': time,
       'dosage': dosage,
-      'frequency': frequency.value,
-      'createdAt': createdAt.toIso8601String(),
+      'frequency': frequency,
+      'parentId': parentId,
+      'childId': childId,
+      'createdAt': FieldValue.serverTimestamp(),
     };
-  }
-}
-
-enum ScheduleFrequency { daily, weekly, custom }
-
-extension ScheduleFrequencyExtension on ScheduleFrequency {
-  String get value {
-    switch (this) {
-      case ScheduleFrequency.daily:
-        return 'daily';
-      case ScheduleFrequency.weekly:
-        return 'weekly';
-      case ScheduleFrequency.custom:
-        return 'custom';
-    }
-  }
-
-  static ScheduleFrequency fromString(String value) {
-    switch (value) {
-      case 'daily':
-        return ScheduleFrequency.daily;
-      case 'weekly':
-        return ScheduleFrequency.weekly;
-      case 'custom':
-        return ScheduleFrequency.custom;
-      default:
-        return ScheduleFrequency.daily;
-    }
-  }
-
-  /// Hiển thị UI
-  String get label {
-    switch (this) {
-      case ScheduleFrequency.daily:
-        return 'Hàng ngày';
-      case ScheduleFrequency.weekly:
-        return 'Hàng tuần';
-      case ScheduleFrequency.custom:
-        return 'Tùy chỉnh';
-    }
   }
 }

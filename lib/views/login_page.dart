@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:oldcare/services/auth/auth_service.dart';
+import 'package:oldcare/viewmodels/auth.viewmodel.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,11 +12,15 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  // final _authService = AuthService();
+  final authViewModel = AuthViewModel(AuthService());
 
   // Màu chủ đạo lấy từ hình ảnh (Xanh dương đậm)
   final Color _primaryColor = const Color(0xFF2563EB);
   final Color _backgroundColor = const Color(0xFFF8FAFC);
   final Color _borderColor = const Color(0xFFE2E8F0);
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -60,10 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'Chăm sóc Cha Mẹ từ xa',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 32),
 
@@ -101,6 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _buildLabel('Email'),
                       const SizedBox(height: 8),
                       TextFormField(
+                        controller: _emailController,
                         decoration: _inputDecoration(
                           hint: 'your.email@example.com',
                           prefixIcon: Icons.email_outlined,
@@ -113,6 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _buildLabel('Mật khẩu'),
                       const SizedBox(height: 8),
                       TextFormField(
+                        controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: _inputDecoration(
                           hint: '••••••••',
@@ -188,7 +193,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            authViewModel.login(
+                              _emailController.text,
+                              _passwordController.text,
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _primaryColor,
                             foregroundColor: Colors.white,
@@ -223,7 +233,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
                               'hoặc',
-                              style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                           Expanded(child: Divider(color: _borderColor)),
@@ -237,7 +250,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           Expanded(
                             child: _buildSocialButton(
                               text: 'Google',
-                              iconAsset: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
+                              iconAsset:
+                                  'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
                               isGoogle: true, // Dùng để xử lý hiển thị ảnh mạng
                             ),
                           ),
@@ -245,7 +259,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           Expanded(
                             child: _buildSocialButton(
                               text: 'Facebook',
-                              iconAsset: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg',
+                              iconAsset:
+                                  'https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg',
                               isGoogle: false,
                             ),
                           ),
@@ -334,9 +349,7 @@ class _LoginScreenState extends State<LoginScreen> {
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 12),
         side: BorderSide(color: _borderColor),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         backgroundColor: Colors.white,
       ),
       child: Row(
@@ -350,8 +363,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: 20,
                   height: 20,
                   child: Image.network(
-                     'https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png',
-                     errorBuilder: (context, error, stackTrace) => 
+                    'https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png',
+                    errorBuilder: (context, error, stackTrace) =>
                         const Icon(Icons.g_mobiledata, color: Colors.red),
                   ),
                 )

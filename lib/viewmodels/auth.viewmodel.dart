@@ -13,16 +13,11 @@ class AuthViewModel extends ChangeNotifier {
 
   Future<void> login(String email, String password) async {
     try {
-      isLoading = true;
-      error = null;
-      notifyListeners();
-
       user = await _authService.login(email, password);
     } catch (e) {
       error = e.toString();
     } finally {
       isLoading = false;
-      notifyListeners();
     }
   }
 
