@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # oldcare  Phu
 
 Mục tiêu của dự án là giải quyết nỗi lo lắng thường trực của người con ("Không biết bố mẹ ở nhà có ổn không? Đã uống thuốc chưa?") và sự phức tạp về công nghệ đối với người già.
@@ -83,3 +84,6 @@ tự động hiển thị ảnh đó (dạng slideshow) khi không dùng. (Giúp
 -   **Ràng buộc 2**: Ứng dụng này là một công cụ hỗ trợ, không thay thế các thiết bị y tế chuyên nghiệp hoặc dịch vụ chăm sóc tại chỗ. </br>
 -   **Giả định 1**: Người Cha/Mẹ có đủ khả năng nhận thức để hiểu "Bấm nút này khi uống thuốc xong" và "Bấm nút đỏ khi gặp nguy hiểm". </br>
 -   **Giả định 2**: Người Con chịu trách nhiệm 100% về tính chính xác của lịch thuốc (FR1.1) được nhập vào hệ thống. 
+=======
+lLOng da
+>>>>>>> 4639b0f47fb8a21f2ed49c4d8213383d1568e01a
