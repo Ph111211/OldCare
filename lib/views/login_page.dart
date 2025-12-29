@@ -10,6 +10,10 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  //   AuthViewModel authViewModel = AuthViewModel(AuthService());
+  //   final _emailController = TextEditingController();
+  //   final _passwordController = TextEditingController();
+
   bool _obscurePassword = true;
   bool _rememberMe = false;
   // final _authService = AuthService();

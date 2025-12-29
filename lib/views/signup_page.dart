@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/auth/auth_service.dart';
+import '../viewmodels/auth.viewmodel.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -8,6 +10,14 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  AuthViewModel authViewModel = AuthViewModel(AuthService());
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _childPhoneController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _confimPasswordController = TextEditingController();
+
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true; 
   bool _agreeToTerms = true; 
@@ -148,6 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     fields.add(_buildLabel('Họ và tên'));
     fields.add(const SizedBox(height: 8));
     fields.add(TextFormField(
+      controller: _nameController,
       decoration: _inputDecoration(
         hint: 'Nguyễn Văn A',
         prefixIcon: Icons.person_outline,
@@ -164,6 +175,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _buildLabel('Số điện thoại'),
         const SizedBox(height: 8),
         TextFormField(
+          controller: _phoneController,
           decoration: _inputDecoration(
             hint: '0912 345 678',
             prefixIcon: Icons.phone_outlined,
@@ -176,6 +188,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _buildLabel('Email'),
         const SizedBox(height: 8),
         TextFormField(
+          controller: _emailController,
           decoration: _inputDecoration(
             hint: 'your.email@example.com',
             prefixIcon: Icons.email_outlined,
@@ -191,6 +204,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _buildLabel('Số điện thoại Con'),
         const SizedBox(height: 8),
         TextFormField(
+          controller: _childPhoneController,
           decoration: _inputDecoration(
             hint: '0912 345 678',
             prefixIcon: Icons.phone_outlined,
@@ -203,6 +217,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _buildLabel('Số điện thoại Bố mẹ'),
         const SizedBox(height: 8),
         TextFormField(
+          controller: _phoneController,
           decoration: _inputDecoration(
             hint: '0912 345 678',
             prefixIcon: Icons.phone_outlined,
@@ -217,6 +232,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     fields.add(_buildLabel('Mật khẩu'));
     fields.add(const SizedBox(height: 8));
     fields.add(TextFormField(
+      controller: _passwordController,
       obscureText: _obscurePassword,
       decoration: _inputDecoration(
         hint: 'Tối thiểu 8 ký tự',
@@ -248,6 +264,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     fields.add(_buildLabel('Xác nhận mật khẩu'));
     fields.add(const SizedBox(height: 8));
     fields.add(TextFormField(
+      controller: _confimPasswordController,
       obscureText: _obscureConfirmPassword,
       decoration: _inputDecoration(
         hint: 'Nhập lại mật khẩu',
@@ -453,10 +470,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             // Kiểm tra loại tài khoản đang chọn
                             if (_userType == 'parent') {
                               // Nếu là Bố mẹ -> Chuyển sang trang Parent
-                              Navigator.pushNamed(context, '/parent'); 
+                              authViewModel.registerParent(password: _passwordController.text, name: _nameController.text, phone: _phoneController.text, childPhone: _childPhoneController.text) ;
                             } else {
                               // Nếu là Con -> Xử lý chuyển sang trang của Con (hoặc về đăng nhập)
                               // Ví dụ: Navigator.pushNamed(context, '/settings');
+                              authViewModel.registerChild(email:_emailController.text,name: _nameController.text,password: _passwordController.text,role:"child",phone:_phoneController.text);
                               print("Đăng ký tài khoản Con");
                             }
                           } : null,
