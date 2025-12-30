@@ -10,9 +10,9 @@ class User_App {
     required this.uid,
     required this.email,
     required this.role,
-    this.name = '',
-    this.phone = '',
-    this.childId = '',
+    required this.name,
+    required this.phone,
+    required this.childId,
   });
 
   factory User_App.fromMap(String uid, Map<String, dynamic> data) {

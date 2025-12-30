@@ -1,222 +1,407 @@
-//
-// import 'dart:ui';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter/rendering.dart';
-// import 'package:flutter/material.dart';
-// KHÔNG DÙNG: import 'package:flutter/rendering.dart';
+import 'package:oldcare/models/user.model.dart';
+import 'package:oldcare/viewmodels/schedulePill/schedulePill.viewmodel.dart';
+import 'package:oldcare/viewmodels/schedule/schedule.viewmodel.dart';
+import 'package:oldcare/services/schedulePhill/schedule_Pill.service.dart';
+import 'package:oldcare/services/schedule/schedule.service.dart';
+import 'package:oldcare/views/child-dashboard.dart';
+import 'package:oldcare/views/history_page.dart';
+import 'package:oldcare/views/setting_page.dart';
+import 'package:provider/provider.dart';
 
-class AddSchedule extends StatelessWidget {
+class AddSchedule extends StatefulWidget {
   const AddSchedule({super.key});
 
   @override
+  State<AddSchedule> createState() => _AddScheduleState();
+}
+
+class _AddScheduleState extends State<AddSchedule> {
+  late final SchedulePillViewModel _schedulePillViewModel;
+  late final ScheduleViewModel _scheduleViewModel;
+  int _currentIndex = 1;
+  @override
+  void initState() {
+    super.initState();
+    _schedulePillViewModel = SchedulePillViewModel(SchedulePillService());
+    _scheduleViewModel = ScheduleViewModel();
+  }
+
+  @override
+  void dispose() {
+    _scheduleViewModel.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header Section
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.only(
-                top: 60,
-                left: 16,
-                right: 16,
-                bottom: 24,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: _schedulePillViewModel),
+        ChangeNotifierProvider.value(value: _scheduleViewModel),
+      ],
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildHeader(),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _buildMedicationForm(),
+                    const SizedBox(height: 20),
+                    _buildAppointmentForm(),
+                  ],
+                ),
               ),
-              // decoration: const BoxDecoration(
-              //   gradient: LinearGradient(
-              //     begin: Alignment.centerLeft,
-              //     end: Alignment.centerRight,
-              //     colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-              //   ),
-              // ),
-              child: Row(
+              const SizedBox(height: 100),
+            ],
+          ),
+        ),
+        bottomNavigationBar: _buildBottomNav(),
+      ),
+    );
+  }
+
+  // ================= HEADER =================
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(top: 60, left: 16, right: 16, bottom: 24),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: Colors.blue.withOpacity(0.2),
+            child: const Icon(Icons.person, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'An Tâm - Con',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                Text('Chăm sóc Cha Mẹ', style: TextStyle(fontSize: 13)),
+              ],
+            ),
+          ),
+          const Icon(Icons.notifications_none),
+          const SizedBox(width: 12),
+          const Icon(Icons.settings),
+        ],
+      ),
+    );
+  }
+
+  // ================= MEDICATION FORM =================
+  Widget _buildMedicationForm() {
+    return Consumer<SchedulePillViewModel>(
+      builder: (context, pillVM, child) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: _cardDecoration(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Tạo lịch uống thuốc mới',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+
+              // Tên thuốc
+              _buildTextField(
+                'Tên thuốc',
+                'Ví dụ: Thuốc huyết áp',
+                controller: pillVM.medicineNameController,
+              ),
+              const SizedBox(height: 12),
+
+              // Thời gian và Liều lượng
+              Row(
                 children: [
-                  CircleAvatar(
-                    radius: 24,
-                    // ✅ SỬA LỖI 1: withValues(alpha: 0.2) -> withOpacity(0.2)
-                    backgroundColor: Colors.white.withOpacity(0.2),
-                    child: const Icon(Icons.person, color: Colors.white),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'An Tâm - Con',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Chăm sóc Cha Mẹ',
-                          style: TextStyle(
-                            color: Color(0xFFDBEAFE),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
+                  Expanded(
+                    child: _buildTimePickerField(
+                      'Thời gian',
+                      pillVM.selectedTime != null
+                          ? _formatTime(pillVM.selectedTime!)
+                          : '08:00',
+                      onTap: () => _selectTime(context, pillVM),
                     ),
                   ),
-                  const Icon(Icons.notifications_none, color: Colors.white),
                   const SizedBox(width: 12),
-                  const Icon(Icons.settings, color: Colors.white),
+                  Expanded(
+                    child: _buildTextField(
+                      'Liều lượng',
+                      '1 viên',
+                      controller: pillVM.dosageController,
+                    ),
+                  ),
                 ],
               ),
-            ),
+              const SizedBox(height: 12),
 
-            // Form Content
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                // ✅ ĐÃ SỬA: Loại bỏ thuộc tính spacing: 20
+              // Tần suất
+              _buildTextField(
+                'Tần suất',
+                'Hàng ngày',
+                controller: pillVM.frequencyController,
+              ),
+
+              // Error message
+              if (pillVM.errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    pillVM.errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                ),
+
+              const SizedBox(height: 12),
+
+              // Buttons
+              Row(
                 children: [
-                  _buildMedicationForm(),
-                  const SizedBox(height: 20), // Thêm khoảng cách thay thế
-                  _buildAppointmentForm(),
+                  Expanded(
+                    child: _buildButton(
+                      'Lưu lịch thuốc',
+                      Colors.blue,
+                      Colors.white,
+                      isLoading: pillVM.isLoading,
+                      onPress: () => _saveMedicationSchedule(context, pillVM),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  _buildButton(
+                    'Hủy',
+                    Colors.grey.shade300,
+                    Colors.black,
+                    onPress: () => pillVM.clearForm(),
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(height: 100), // Space for Bottom Nav
-          ],
-        ),
-      ),
-      bottomNavigationBar: _buildBottomNav(),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildMedicationForm() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: _cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        // ✅ ĐÃ SỬA: Loại bỏ thuộc tính spacing: 12
-        children: [
-          const Text(
-            'Tạo lịch uống thuốc mới',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          _buildTextField('Tên thuốc', 'Ví dụ: Thuốc Huyết áp'),
-          const SizedBox(height: 12),
-          Row(
-            // ✅ ĐÃ SỬA: Loại bỏ thuộc tính spacing: 12
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  'Thời gian',
-                  '08:00 AM',
-                  icon: Icons.access_time,
-                ),
-              ),
-              const SizedBox(width: 12), // Khoảng cách ngang
-              Expanded(child: _buildTextField('Liều lượng', '1 viên')),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _buildTextField('Tần suất', 'Hàng ngày', icon: Icons.arrow_drop_down),
-          const SizedBox(height: 8),
-          Row(
-            // ✅ ĐÃ SỬA: Loại bỏ thuộc tính spacing: 12
-            children: [
-              Expanded(
-                child: _buildButton(
-                  'Lưu lịch thuốc',
-                  const Color(0xFF2563EB),
-                  Colors.white,
-                ),
-              ),
-              const SizedBox(width: 12), // Khoảng cách ngang
-              _buildButton(
-                'Hủy',
-                const Color(0xFFE5E7EB),
-                const Color(0xFF374151),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
+  // ================= APPOINTMENT FORM =================
   Widget _buildAppointmentForm() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: _cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        // ✅ ĐÃ SỬA: Loại bỏ thuộc tính spacing: 12
-        children: [
-          const Text(
-            'Tạo lịch hẹn',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          _buildTextField('Tiêu đề', 'Ví dụ: Tái khám Tim mạch'),
-          const SizedBox(height: 12),
-          Row(
-            // ✅ ĐÃ SỬA: Loại bỏ thuộc tính spacing: 12
+    return Consumer<ScheduleViewModel>(
+      builder: (context, scheduleVM, child) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: _cardDecoration(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _buildTextField(
-                  'Ngày',
-                  '11/15/2025',
-                  icon: Icons.calendar_today,
-                ),
+              const Text(
+                'Tạo lịch hẹn',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(width: 12), // Khoảng cách ngang
-              Expanded(
-                child: _buildTextField(
-                  'Giờ',
-                  '09:00 AM',
-                  icon: Icons.access_time,
+              const SizedBox(height: 12),
+
+              // Tiêu đề
+              _buildTextField(
+                'Tiêu đề',
+                'Ví dụ: Tái khám Tim mạch',
+                controller: scheduleVM.titleController,
+              ),
+              const SizedBox(height: 12),
+
+              // Ngày và Giờ
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDatePickerField(
+                      'Ngày',
+                      scheduleVM.formatDate(scheduleVM.selectedDate),
+                      onTap: () => _selectDate(context, scheduleVM),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildTimePickerField(
+                      'Giờ',
+                      _formatTime(scheduleVM.selectedTime),
+                      onTap: () =>
+                          _selectTimeForAppointment(context, scheduleVM),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Ghi chú
+              _buildTextField(
+                'Ghi chú',
+                'Địa điểm, bác sĩ, chuẩn bị...',
+                controller: scheduleVM.noteController,
+                maxLines: 3,
+              ),
+
+              // Error message
+              if (scheduleVM.errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    scheduleVM.errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  ),
                 ),
+
+              const SizedBox(height: 12),
+
+              // Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildButton(
+                      'Lưu lịch hẹn',
+                      Colors.blue,
+                      Colors.white,
+                      isLoading: scheduleVM.isLoading,
+                      onPress: () => _saveAppointment(context, scheduleVM),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  _buildButton(
+                    'Hủy',
+                    Colors.grey.shade300,
+                    Colors.black,
+                    onPress: () => scheduleVM.clearForm(),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          _buildTextField(
-            'Ghi chú',
-            'Địa điểm, bác sĩ, chuẩn bị...',
-            maxLines: 2,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            // ✅ ĐÃ SỬA: Loại bỏ thuộc tính spacing: 12
-            children: [
-              Expanded(
-                child: _buildButton(
-                  'Lưu lịch hẹn',
-                  const Color(0xFF2563EB),
-                  Colors.white,
-                ),
-              ),
-              const SizedBox(width: 12), // Khoảng cách ngang
-              _buildButton(
-                'Hủy',
-                const Color(0xFFE5E7EB),
-                const Color(0xFF374151),
-              ),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  // Reusable Widgets
+  // ================= ACTIONS =================
+  Future<void> _saveMedicationSchedule(
+    BuildContext context,
+    SchedulePillViewModel vm,
+  ) async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Vui lòng đăng nhập')));
+      return;
+    }
+
+    final currentUser = User_App(
+      uid: firebaseUser.uid,
+      email: firebaseUser.email ?? '',
+      role: '',
+      name: '',
+      phone: '',
+      childId: '',
+    );
+
+    final success = await vm.addSchedule(
+      currentUser: currentUser,
+      medicineName: vm.medicineNameController.text,
+      time: vm.selectedTime != null ? _formatTime(vm.selectedTime!) : '',
+      dosage: vm.dosageController.text,
+      frequency: vm.frequencyController.text,
+    );
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lưu lịch uống thuốc thành công!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  Future<void> _saveAppointment(
+    BuildContext context,
+    ScheduleViewModel vm,
+  ) async {
+    final success = await vm.saveSchedule();
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lưu lịch hẹn thành công!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else if (!success && vm.errorMessage != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(vm.errorMessage!), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  // ================= DATE/TIME PICKERS =================
+  Future<void> _selectDate(BuildContext context, ScheduleViewModel vm) async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: vm.selectedDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (date != null) {
+      vm.updateSelectedDate(date);
+    }
+  }
+
+  Future<void> _selectTimeForAppointment(
+    BuildContext context,
+    ScheduleViewModel vm,
+  ) async {
+    final time = await showTimePicker(
+      context: context,
+      initialTime: vm.selectedTime,
+    );
+    if (time != null) {
+      vm.updateSelectedTime(time);
+    }
+  }
+
+  Future<void> _selectTime(
+    BuildContext context,
+    SchedulePillViewModel vm,
+  ) async {
+    final time = await showTimePicker(
+      context: context,
+      initialTime: vm.selectedTime ?? TimeOfDay.now(),
+    );
+    if (time != null) {
+      vm.updateSelectedTime(time);
+    }
+  }
+
+  // ================= HELPERS =================
+  String _formatTime(TimeOfDay time) {
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    return '$hour:$minute $period';
+  }
+
+  // ================= UI COMPONENTS =================
   BoxDecoration _cardDecoration() {
     return BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: const Color(0xFFE5E7EB)),
+      border: Border.all(color: Colors.grey.shade300),
       boxShadow: [
-        // ✅ SỬA LỖI 1: withValues(alpha: 0.05) -> withOpacity(0.05)
         BoxShadow(
           color: Colors.black.withOpacity(0.05),
           blurRadius: 10,
@@ -229,33 +414,23 @@ class AddSchedule extends StatelessWidget {
   Widget _buildTextField(
     String label,
     String hint, {
-    IconData? icon,
+    required TextEditingController controller,
     int maxLines = 1,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
-        ),
+        Text(label, style: const TextStyle(fontSize: 14)),
         const SizedBox(height: 6),
         TextField(
+          controller: controller,
           maxLines: maxLines,
           decoration: InputDecoration(
             hintText: hint,
-            suffixIcon: icon != null ? Icon(icon, size: 20) : null,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
               vertical: 12,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
             ),
           ),
         ),
@@ -263,17 +438,95 @@ class AddSchedule extends StatelessWidget {
     );
   }
 
-  Widget _buildButton(String text, Color bg, Color textCol) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: textCol, fontWeight: FontWeight.bold),
+  Widget _buildDatePickerField(
+    String label,
+    String value, {
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 14)),
+        const SizedBox(height: 6),
+        InkWell(
+          onTap: onTap,
+          child: InputDecorator(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+              suffixIcon: const Icon(Icons.calendar_today, size: 20),
+            ),
+            child: Text(value),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimePickerField(
+    String label,
+    String value, {
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 14)),
+        const SizedBox(height: 6),
+        InkWell(
+          onTap: onTap,
+          child: InputDecorator(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+              suffixIcon: const Icon(Icons.access_time, size: 20),
+            ),
+            child: Text(value),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildButton(
+    String text,
+    Color bg,
+    Color textColor, {
+    required VoidCallback onPress,
+    bool isLoading = false,
+  }) {
+    return GestureDetector(
+      onTap: isLoading ? null : onPress,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isLoading ? bg.withOpacity(0.6) : bg,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Text(
+                text,
+                style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+              ),
       ),
     );
   }
@@ -283,19 +536,54 @@ class AddSchedule extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       selectedItemColor: const Color(0xFF2563EB),
       unselectedItemColor: Colors.grey,
-      currentIndex: 1,
-      items: const [
+      currentIndex: _currentIndex,
+      onTap: _onBottomNavTapped,
+      items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard),
+          icon: const Icon(Icons.dashboard),
           label: 'Tổng quan',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add_circle),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.add_circle_outline),
           label: 'Thêm lịch',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Lịch sử'),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Cài đặt'),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.history),
+          label: 'Lịch sử',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: 'Cài đặt',
+        ),
       ],
+    );
+  }
+
+  void _onBottomNavTapped(int index) {
+    if (index == _currentIndex) return;
+
+    Widget nextScreen;
+
+    switch (index) {
+      case 0:
+        nextScreen = const ChildDashboard();
+        break;
+      case 1:
+        nextScreen = const AddSchedule();
+        break;
+      case 2:
+        nextScreen = const HistoryScreen();
+        break;
+      case 3:
+        nextScreen = const AnTamSettingApp();
+        break;
+      default:
+        return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => nextScreen),
     );
   }
 }

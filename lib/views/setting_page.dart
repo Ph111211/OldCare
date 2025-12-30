@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:oldcare/services/auth/auth_service.dart';
+import '../viewmodels/auth.viewmodel.dart';
 
 // --- 2. ROOT WIDGET (Quản lý Theme & MaterialApp) ---
 class AnTamSettingApp extends StatefulWidget {
@@ -11,7 +13,7 @@ class AnTamSettingApp extends StatefulWidget {
 class _AnTamSettingAppState extends State<AnTamSettingApp> {
   // Trạng thái Dark Mode quản lý tại đỉnh ứng dụng
   bool _isDarkMode = false;
-
+  final authViewModel = AuthViewModel(AuthService());
   void _toggleTheme(bool isOn) {
     setState(() {
       _isDarkMode = isOn;
@@ -732,35 +734,43 @@ class _CITContentState extends State<CITContent> {
   }
 
   Widget _buildLogoutBlock() {
-    return Container(
-      width: 380,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: _getCardColor(),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _getBorderColor()),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0C000000),
-            blurRadius: 2,
-            offset: Offset(0, 1),
-          ),
-        ],
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.logout, color: Color(0xFFDC2626), size: 20),
-          SizedBox(width: 8),
-          Text(
-            'Đăng xuất',
-            style: TextStyle(
-              color: Color(0xFFDC2626),
-              fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        // Handle logout action here
+        final authViewModel = AuthViewModel(AuthService());
+        authViewModel.logout();
+        Navigator.pushNamed(context, '/signin');
+      },
+      child: Container(
+        width: 380,
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: _getCardColor(),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _getBorderColor()),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0C000000),
+              blurRadius: 2,
+              offset: Offset(0, 1),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.logout, color: Color(0xFFDC2626), size: 20),
+            SizedBox(width: 8),
+            Text(
+              'Đăng xuất',
+              style: TextStyle(
+                color: Color(0xFFDC2626),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
