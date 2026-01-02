@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
+import '../views/add_schedule.dart';
+import '../views/child-dashboard.dart';
+import '../views/setting_page.dart';
+import '../views/history_page.dart';
 
-class ChildDashboard extends StatelessWidget {
+class ChildDashboard extends StatefulWidget {
   const ChildDashboard({super.key});
+
+  @override
+  State<ChildDashboard> createState() => _ChildDashBoardState();
+}
+
+class _ChildDashBoardState extends State<ChildDashboard> {
+  int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +35,9 @@ class ChildDashboard extends StatelessWidget {
                       _buildMedicationSchedule(),
                       const SizedBox(height: 24),
                       _buildAppointmentSchedule(),
-                      const SizedBox(height: 120), // Khoảng trống để không bị Bottom Nav che
+                      const SizedBox(
+                        height: 120,
+                      ), // Khoảng trống để không bị Bottom Nav che
                     ],
                   ),
                 ),
@@ -32,12 +45,7 @@ class ChildDashboard extends StatelessWidget {
             ),
           ),
           // Bottom Navigation cố định
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: _buildBottomNav(),
-          ),
+          Positioned(bottom: 0, left: 0, right: 0, child: _buildBottomNav()),
         ],
       ),
     );
@@ -67,10 +75,18 @@ class ChildDashboard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('An Tâm - Con',
-                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                  Text('Chăm sóc Cha Mẹ',
-                      style: TextStyle(color: Colors.blue.shade100, fontSize: 13)),
+                  const Text(
+                    'An Tâm - Con',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'Chăm sóc Cha Mẹ',
+                    style: TextStyle(color: Colors.blue.shade100, fontSize: 13),
+                  ),
                 ],
               ),
             ],
@@ -99,13 +115,27 @@ class ChildDashboard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Cảnh báo: Chưa uống thuốc',
-                    style: TextStyle(color: Color(0xFF7F1D1D), fontWeight: FontWeight.bold, fontSize: 15)),
-                const Text('Cha/Mẹ chưa xác nhận uống Vitamin D lúc 12:00. Đã quá 30 phút.',
-                    style: TextStyle(color: Color(0xFFB91C1C), fontSize: 13)),
+                const Text(
+                  'Cảnh báo: Chưa uống thuốc',
+                  style: TextStyle(
+                    color: Color(0xFF7F1D1D),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+                const Text(
+                  'Cha/Mẹ chưa xác nhận uống Vitamin D lúc 12:00. Đã quá 30 phút.',
+                  style: TextStyle(color: Color(0xFFB91C1C), fontSize: 13),
+                ),
                 const SizedBox(height: 8),
-                Text('Gọi điện ngay',
-                    style: TextStyle(color: Colors.red.shade700, decoration: TextDecoration.underline, fontWeight: FontWeight.bold)),
+                Text(
+                  'Gọi điện ngay',
+                  style: TextStyle(
+                    color: Colors.red.shade700,
+                    decoration: TextDecoration.underline,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
@@ -118,11 +148,26 @@ class ChildDashboard extends StatelessWidget {
   Widget _buildStatGrid() {
     return Row(
       children: [
-        _statItem("90%", "Tuân thủ\ntháng này", const Color(0xFFF0FDF4), const Color(0xFF14532D)),
+        _statItem(
+          "90%",
+          "Tuân thủ\ntháng này",
+          const Color(0xFFF0FDF4),
+          const Color(0xFF14532D),
+        ),
         const SizedBox(width: 12),
-        _statItem("3/3", "Lịch thuốc\nhôm nay", const Color(0xFFEFF6FF), const Color(0xFF1E3A8A)),
+        _statItem(
+          "3/3",
+          "Lịch thuốc\nhôm nay",
+          const Color(0xFFEFF6FF),
+          const Color(0xFF1E3A8A),
+        ),
         const SizedBox(width: 12),
-        _statItem("2", "Lịch hẹn\nsắp tới", const Color(0xFFFAF5FF), const Color(0xFF581C87)),
+        _statItem(
+          "2",
+          "Lịch hẹn\nsắp tới",
+          const Color(0xFFFAF5FF),
+          const Color(0xFF581C87),
+        ),
       ],
     );
   }
@@ -139,9 +184,19 @@ class ChildDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(label, style: TextStyle(fontSize: 11, color: textColor.withOpacity(0.8))),
+            Text(
+              label,
+              style: TextStyle(fontSize: 11, color: textColor.withOpacity(0.8)),
+            ),
           ],
         ),
       ),
@@ -153,7 +208,12 @@ class ChildDashboard extends StatelessWidget {
     return _buildSectionCard(
       title: "Lịch uống thuốc hôm nay",
       children: [
-        _medItem("Thuốc Huyết áp", "08:00 • 1 viên", "Đã uống lúc 08:05", Colors.green),
+        _medItem(
+          "Thuốc Huyết áp",
+          "08:00 • 1 viên",
+          "Đã uống lúc 08:05",
+          Colors.green,
+        ),
         _medItem("Vitamin D", "12:00 • 1 viên", "Bỏ lỡ", Colors.red),
       ],
     );
@@ -164,13 +224,20 @@ class ChildDashboard extends StatelessWidget {
     return _buildSectionCard(
       title: "Lịch hẹn sắp tới",
       children: [
-        _appointmentItem("Tái khám Tim mạch", "15 Th 11 • 09:00", "BS. Nguyễn Văn A"),
+        _appointmentItem(
+          "Tái khám Tim mạch",
+          "15 Th 11 • 09:00",
+          "BS. Nguyễn Văn A",
+        ),
       ],
     );
   }
 
   // Helper Widgets
-  Widget _buildSectionCard({required String title, required List<Widget> children}) {
+  Widget _buildSectionCard({
+    required String title,
+    required List<Widget> children,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -182,7 +249,10 @@ class ChildDashboard extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            child: Text(
+              title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
           const Divider(height: 1),
           ...children,
@@ -197,7 +267,10 @@ class ChildDashboard extends StatelessWidget {
       subtitle: Text(info),
       trailing: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Text(status, style: TextStyle(color: color, fontSize: 12)),
       ),
     );
@@ -207,7 +280,10 @@ class ChildDashboard extends StatelessWidget {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(
+          color: Colors.blue.shade50,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: const Icon(Icons.calendar_today, color: Colors.blue),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -217,31 +293,63 @@ class ChildDashboard extends StatelessWidget {
   }
 
   Widget _buildBottomNav() {
-    return Container(
-      height: 80,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _navItem(Icons.dashboard, "Tổng quan", true),
-          _navItem(Icons.add_box, "Thêm lịch", false),
-          _navItem(Icons.history, "Lịch sử", false),
-          _navItem(Icons.settings, "Cài đặt", false),
-        ],
-      ),
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      selectedItemColor: const Color(0xFF2563EB),
+      unselectedItemColor: Colors.grey,
+      currentIndex: _currentIndex,
+      onTap: _onBottomNavTapped,
+      items: <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.dashboard),
+          label: 'Tổng quan',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.add_circle_outline),
+          label: 'Thêm lịch',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.history),
+          label: 'Lịch sử',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: 'Cài đặt',
+        ),
+      ],
     );
   }
 
-  Widget _navItem(IconData icon, String label, bool active) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: active ? Colors.blue : Colors.grey),
-        Text(label, style: TextStyle(color: active ? Colors.blue : Colors.grey, fontSize: 10)),
-      ],
+  void _onBottomNavTapped(int index) {
+    if (index == _currentIndex) return;
+
+    Widget nextScreen;
+
+    switch (index) {
+      case 0:
+        nextScreen = const ChildDashboard();
+        break;
+      case 1:
+        nextScreen = const AddSchedule();
+        break;
+      case 2:
+        nextScreen = const HistoryScreen();
+        break;
+      case 3:
+        nextScreen = const AnTamSettingApp();
+        break;
+      default:
+        return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => nextScreen),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }
