@@ -256,7 +256,7 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
 
   /// Logic xử lý DateTime: So sánh thời gian hệ thống và lịch thuốc
   MedicationNotice _getNotice(List<SchedulePill> pills) {
-    String msg = "Chúc Bố Mẹ một ngày tốt lành!";
+    String msg = "";
     Color col = const Color(0xFF4B5563);
     Widget? banner;
     String? currentId;
@@ -278,7 +278,8 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
           dosage: pill.dosage,
           bgColor: const Color(0xFFEF4444),
         );
-        msg = "ĐẾN GIỜ UỐNG: ${pill.medicineName.toUpperCase()}!";
+        // msg = "ĐẾN GIỜ UỐNG: ${pill.medicineName.toUpperCase()}!";
+        msg = "";
         col = Colors.redAccent;
         currentId = pill.id;
         break;
@@ -294,9 +295,9 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
               ? const Color(0xFF22C55E)
               : const Color(0xFF3B82F6),
         );
-        msg = difference == 0
-            ? "Đã đến giờ uống thuốc!"
-            : "Sắp uống thuốc (còn $difference phút)";
+        // msg = difference == 0
+        //     ? "Đã đến giờ uống thuốc!"
+        //     : "Sắp uống thuốc (còn $difference phút)";
         col = difference == 0 ? Colors.green : Colors.orangeAccent;
         currentId = pill.id;
         break;
@@ -422,9 +423,8 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
                     icon: Icons.check_circle_outline,
                     onTap: () {
                       if (notice.currentPillId != null) {
-                        vm.confirmPillTaken(
-                          notice.currentPillId!,
-                        ); // Cập nhật trạng thái lên Firebase
+                        vm.confirmPillTaken(notice.currentPillId!);
+                        // Cập nhật trạng thái lên Firebase
                       }
                     },
                   ),
