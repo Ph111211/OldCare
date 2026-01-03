@@ -310,13 +310,15 @@ class _AddScheduleState extends State<AddSchedule> {
       childId: '',
     );
 
-    final success = await vm.addSchedule(
-      currentUser: currentUser,
-      medicineName: vm.medicineNameController.text,
-      time: vm.selectedTime != null ? _formatTime(vm.selectedTime!) : '',
-      dosage: vm.dosageController.text,
-      frequency: vm.frequencyController.text,
+    // Trong widget của bạn, khi nhấn nút Lưu:
+    final success = await vm.saveSchedulePill(
+      currentUser.uid, // Truyền parentId
+      currentUser.childId, // Truyền childId
     );
+
+    if (success) {
+      Navigator.pop(context); // Đóng màn hình sau khi lưu thành công
+    }
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
