@@ -34,9 +34,9 @@ class SchedulePillViewModel extends ChangeNotifier {
   // --- READ METHODS (STREAMS) ---
 
   /// Lắng nghe thay đổi real-time theo parentId (Dùng cho Dashboard)
-  Stream<List<SchedulePill>> getSchedulePillsByParentIdStream(String parentId) {
-    _currentParentId = parentId;
-    return _schedulePillService.getSchedulePillsByParentIdStream(parentId);
+  Stream<List<SchedulePill>> getSchedulePillsByParentIdStream(String childId) {
+    _currentParentId = childId;
+    return _schedulePillService.getSchedulePillsByParentIdStream(childId);
   }
 
   /// Lắng nghe thay đổi real-time theo childId
@@ -48,7 +48,7 @@ class SchedulePillViewModel extends ChangeNotifier {
   // --- WRITE METHODS (SAVE / UPDATE / DELETE) ---
 
   /// Tạo hoặc cập nhật lịch uống thuốc
-  Future<bool> saveSchedulePill(String parentId, String childId) async {
+  Future<bool> saveSchedulePill(String childId, String parentId) async {
     final error = validateForm();
     if (error != null) {
       _errorMessage = error;
