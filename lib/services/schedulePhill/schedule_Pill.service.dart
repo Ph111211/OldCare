@@ -25,48 +25,48 @@ class SchedulePillService {
     }
   }
 
-  Future<void> _saveMedicationSchedule(
-    BuildContext context,
-    SchedulePillViewModel vm,
-  ) async {
-    // 1. Lấy thông tin User hiện tại từ Firebase
-    final firebaseUser = FirebaseAuth.instance.currentUser;
+  // Future<void> _saveMedicationSchedule(
+  //   BuildContext context,
+  //   SchedulePillViewModel vm,
+  // ) async {
+  //   // 1. Lấy thông tin User hiện tại từ Firebase
+  //   final firebaseUser = FirebaseAuth.instance.currentUser;
 
-    if (firebaseUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng đăng nhập để thực hiện thao tác này'),
-        ),
-      );
-      return;
-    }
+  //   if (firebaseUser == null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Vui lòng đăng nhập để thực hiện thao tác này'),
+  //       ),
+  //     );
+  //     return;
+  //   }
 
-    // 2. Xác định các ID
-    // Theo yêu cầu của bạn: childId = ID của người dùng hiện tại (người con)
-    final String currentChildId = firebaseUser.uid;
+  //   // 2. Xác định các ID
+  //   // Theo yêu cầu của bạn: childId = ID của người dùng hiện tại (người con)
+  //   final String currentChildId = firebaseUser.uid;
 
-    // Lưu ý: parentId thường là ID của người già được quản lý.
-    // Nếu bạn chưa có logic chọn người già, tạm thời để trống hoặc dùng chính ID người con nếu tự quản lý.
-    // Ở đây tôi giả định bạn đang gán lịch cho một Parent cụ thể nào đó.
-    final String targetParentId = "ID_NGUOI_GIA_CAN_QUAN_LY";
+  //   // Lưu ý: parentId thường là ID của người già được quản lý.
+  //   // Nếu bạn chưa có logic chọn người già, tạm thời để trống hoặc dùng chính ID người con nếu tự quản lý.
+  //   // Ở đây tôi giả định bạn đang gán lịch cho một Parent cụ thể nào đó.
+  //   final String targetParentId = "ID_NGUOI_GIA_CAN_QUAN_LY";
 
-    // 3. Gọi hàm save với childId là ID user hiện tại
-    final success = await vm.saveSchedulePill(
-      targetParentId, // parentId
-      currentChildId, // childId (Gán bằng ID User hiện tại)
-    );
+  //   // 3. Gọi hàm save với childId là ID user hiện tại
+  //   final success = await vm.saveSchedulePill(
+  //     targetParentId, // parentId
+  //     currentChildId, // childId (Gán bằng ID User hiện tại)
+  //   );
 
-    if (success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lưu lịch uống thuốc thành công!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      // Bạn có thể xóa form sau khi lưu thành công
-      vm.clearForm();
-    }
-  }
+  //   if (success && context.mounted) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Lưu lịch uống thuốc thành công!'),
+  //         backgroundColor: Colors.green,
+  //       ),
+  //     );
+  //     // Bạn có thể xóa form sau khi lưu thành công
+  //     vm.clearForm();
+  //   }
+  // }
 
   /// READ - Stream lấy lịch uống thuốc theo parentId (Cập nhật thời gian thực cho Dashboard)
   Stream<List<SchedulePill>> getSchedulePillsByParentIdStream(String parentId) {
