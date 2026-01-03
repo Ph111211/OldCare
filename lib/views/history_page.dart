@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+// import 'package:oldcare/providers/theme_provider.dart';
+import 'package:provider/provider.dart';
 import '../views/add_schedule.dart';
 import '../views/child-dashboard.dart';
 import '../views/setting_page.dart';
 
 class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({super.key});
+  final bool isDarkMode;
+  const HistoryScreen({super.key, this.isDarkMode = false});
 
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
@@ -25,9 +28,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Kiểm tra chế độ Dark Mode hiện tại
+    // // Kiểm tra chế độ Dark Mode hiện tại
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // final themeProvider = Provider.of<ThemeProvider>(context);
+    // final bool isDark = themeProvider.isDarkMode;
     return Scaffold(
       // Sử dụng màu nền từ Theme để đồng bộ với Setting Page
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -283,23 +288,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   void _onBottomNavTapped(int index) {
     if (index == _currentIndex) return;
+
     Widget nextScreen;
     switch (index) {
       case 0:
-        nextScreen = const ChildDashboard();
+        // Cần cập nhật ChildDashboard để nhận isDarkMode
+        nextScreen = ChildDashboard(isDarkMode: widget.isDarkMode);
         break;
       case 1:
-        nextScreen = const AddSchedule();
+        // Cần cập nhật AddSchedule để nhận isDarkMode
+        nextScreen = AddSchedule();
         break;
       case 2:
-        nextScreen = const HistoryScreen();
+        nextScreen = HistoryScreen(isDarkMode: widget.isDarkMode);
         break;
       case 3:
-        nextScreen = const AnTamSettingApp();
+        // 3. Truyền giá trị hiện tại sang Setting Page
+        nextScreen = AnTamSettingApp(isDarkModeI: widget.isDarkMode);
         break;
       default:
         return;
     }
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => nextScreen),
