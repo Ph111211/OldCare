@@ -1,7 +1,6 @@
 // import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'routes/route.dart';
 import 'firebase_options.dart';
 import 'auth_gate.dart';
 
