@@ -20,7 +20,7 @@ class AddSchedule extends StatefulWidget {
 class _AddScheduleState extends State<AddSchedule> {
   late final SchedulePillViewModel _schedulePillViewModel;
   late final ScheduleViewModel _scheduleViewModel;
-  int _currentIndex = 1;
+  final int _currentIndex = 1;
   @override
   void initState() {
     super.initState();
