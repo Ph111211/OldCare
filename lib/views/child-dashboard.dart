@@ -695,7 +695,7 @@ class _ChildDashBoardState extends State<ChildDashboard> {
                   (item) => _appointmentItem(
                     item.title,
                     "${scheduleViewModel.formatDate(item.date)} • ${item.time}",
-                    item.location ?? "Địa chỉ chưa xác định",
+                    item.note ?? "Địa chỉ chưa xác định",
                   ),
                 )
                 .toList(),
