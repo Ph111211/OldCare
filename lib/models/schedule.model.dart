@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Schedule {
-  final String title; // Tiêu đề lịch hẹn
-  final DateTime date; // Ngày (11/15/2025)
-  final String time; // Giờ (09:00)
-  final String? note; // Ghi chú
+  final String title;
+  final DateTime date;
+  final String time;
+  final String? note;
+  final String? location; // Thêm dòng này
   final DateTime createdAt;
 
   Schedule({
@@ -12,47 +13,38 @@ class Schedule {
     required this.date,
     required this.time,
     this.note,
+    this.location, // Thêm dòng này
     required this.createdAt,
   });
 
-  /// JSON -> Schedule
-  factory Schedule.fromJson(Map<String, dynamic> json) {
+  // Cập nhật hàm fromMap để đọc dữ liệu location từ Firebase
+  factory Schedule.fromMap(Map<String, dynamic> map) {
     return Schedule(
-      title: json['title'] as String,
-      date: DateTime.parse(json['date']),
-      time: json['time'] as String,
-      note: json['note'],
-      createdAt: DateTime.parse(json['createdAt']),
+      title: map['title'] ?? '',
+      date: _convertToDateTime(map['date']),
+      time: map['time'] ?? '',
+      note: map['note'],
+      location: map['location'], // Thêm dòng này
+      createdAt: _convertToDateTime(map['createdAt']),
     );
   }
 
-  /// Schedule -> JSON
+  // Cập nhật hàm toJson để lưu dữ liệu location lên Firebase
   Map<String, dynamic> toJson() {
     return {
       'title': title,
       'date': date.toIso8601String(),
       'time': time,
       'note': note,
+      'location': location, // Thêm dòng này
       'createdAt': createdAt.toIso8601String(),
     };
   }
 
-  factory Schedule.fromFirestore(String id, Map<String, dynamic> data) {
-    return Schedule(
-      title: data['title'],
-      date: (data['date'] as Timestamp).toDate(),
-      time: data['time'],
-      note: data['note'],
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-    );
-  }
-  factory Schedule.fromMap(String id, Map<String, dynamic> map) {
-    return Schedule(
-      title: map['title'],
-      date: (map['date'] as Timestamp).toDate(),
-      time: map['time'],
-      note: map['note'],
-      createdAt: (map['createdAt'] as Timestamp).toDate(),
-    );
+  // Hàm trợ giúp chuyển đổi ngày tháng (đã có từ bước trước)
+  static DateTime _convertToDateTime(dynamic value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is String) return DateTime.parse(value);
+    return DateTime.now();
   }
 }
