@@ -9,14 +9,18 @@ import '../views/history_page.dart';
 
 // --- 1. ROOT WIDGET ---
 class AnTamSettingApp extends StatefulWidget {
-  const AnTamSettingApp({super.key});
+  final bool isDarkModeI;
+
+  const AnTamSettingApp({super.key, this.isDarkModeI = false});
 
   @override
-  State<AnTamSettingApp> createState() => _AnTamSettingAppState();
+  State<AnTamSettingApp> createState() => _AnTamSettingAppState(isDarkModeI);
 }
 
 class _AnTamSettingAppState extends State<AnTamSettingApp> {
-  bool _isDarkMode = false;
+  bool _isDarkMode;
+
+  _AnTamSettingAppState(bool isDarkModeI) : _isDarkMode = isDarkModeI;
 
   void _toggleTheme(bool isOn) {
     setState(() {
@@ -78,14 +82,15 @@ class _SettingScreenState extends State<SettingScreen> {
     Widget nextScreen;
     switch (index) {
       case 0:
-        nextScreen =
-            const ChildDashboard(); // Đảm bảo đã định nghĩa các class này
+        nextScreen = ChildDashboard(
+          isDarkMode: widget.isDarkMode,
+        ); // Đảm bảo đã định nghĩa các class này
         break;
       case 1:
-        nextScreen = const AddSchedule();
+        nextScreen = AddSchedule(isDarkMode: widget.isDarkMode);
         break;
       case 2:
-        nextScreen = const HistoryScreen();
+        nextScreen = HistoryScreen(isDarkMode: widget.isDarkMode);
         break;
       case 3:
         nextScreen = const AnTamSettingApp();
