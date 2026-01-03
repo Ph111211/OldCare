@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oldcare/services/auth/auth_service.dart';
 import 'package:oldcare/viewmodels/auth.viewmodel.dart';
+import 'package:oldcare/views/signup_page.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -285,7 +286,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.pushNamed(context, '/signup');
+                        // Navigator.pushNamed(context, '/signup');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterScreen(),
+                          ),
+                        );
                       },
                       child: Text(
                         'Đăng ký ngay',
