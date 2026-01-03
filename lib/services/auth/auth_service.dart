@@ -14,6 +14,10 @@ class AuthService {
   BuildContext? get context => null;
   // LOGIN
   Future<User_App> login(String email, String password) async {
+    if (!email.endsWith("@gmail.com")) {
+      // Thực hiện hành động nếu email có đuôi @oldcare.com
+      email += "@oldcare.com";
+    }
     final credential = await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
