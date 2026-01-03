@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../viewmodels/Schedule/schedule.viewmodel.dart';
 import '../views/add_schedule.dart';
-import '../views/child-dashboard.dart';
 import '../views/setting_page.dart';
 import '../views/history_page.dart';
 
@@ -12,46 +12,275 @@ class ChildDashboard extends StatefulWidget {
 }
 
 class _ChildDashBoardState extends State<ChildDashboard> {
+  final ScheduleViewModel scheduleViewModel = ScheduleViewModel();
   final int _currentIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       body: Stack(
         children: [
-          // Phần nội dung có thể cuộn
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildHeader(),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      _buildAlertCard(),
-                      const SizedBox(height: 24),
-                      _buildStatGrid(),
-                      const SizedBox(height: 24),
-                      _buildMedicationSchedule(),
-                      const SizedBox(height: 24),
-                      _buildAppointmentSchedule(),
-                      const SizedBox(
-                        height: 120,
-                      ), // Khoảng trống để không bị Bottom Nav che
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          StreamBuilder<List<dynamic>>(
+            stream: scheduleViewModel.getSchedulesStream(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              // Dữ liệu từ Firebase (Lịch hẹn)
+              final allSchedules = snapshot.data ?? [];
+
+              return _buildMainScrollContent(
+                content: [
+                  _buildAlertCard(),
+                  const SizedBox(height: 24),
+                  _buildStatGrid(allSchedules.length),
+                  const SizedBox(height: 24),
+
+                  // 1. PHẦN LỊCH UỐNG THUỐC (Medication Schedule)
+                  _buildMedicationSchedule(),
+
+                  const SizedBox(height: 24),
+
+                  // 2. PHẦN LỊCH HẸN (Appointment List - Dữ liệu thực từ Stream)
+                  _buildAppointmentList(allSchedules),
+                ],
+              );
+            },
           ),
-          // Bottom Navigation cố định
           Positioned(bottom: 0, left: 0, right: 0, child: _buildBottomNav()),
         ],
       ),
     );
   }
 
-  // 1. Header Blue Section
+  // --- PHẦN MỚI: LỊCH UỐNG THUỐC ---
+  Widget _buildMedicationSchedule() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Column(
+        children: [
+          // Header của khối thuốc
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Lịch uống thuốc hôm nay",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                TextButton(
+                  onPressed: () {},
+                  child: const Text(
+                    "Xem tất cả",
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+
+          // Danh sách các loại thuốc theo đúng mẫu ảnh
+          _buildMedicationItem(
+            name: "Thuốc Huyết áp",
+            time: "08:00",
+            dosage: "1 viên",
+            status: "Đã uống",
+            subStatus: "Đã uống lúc 08:05",
+            statusColor: const Color(0xFFE8F5E9), // Xanh lá nhạt
+            textColor: const Color(0xFF2E7D32),
+            icon: Icons.check,
+          ),
+          _buildMedicationItem(
+            name: "Thuốc Tiểu đường",
+            time: "18:00",
+            dosage: "2 viên",
+            status: "Chưa đến giờ",
+            statusColor: const Color(0xFFFFF8E1), // Vàng nhạt
+            textColor: const Color(0xFFF57F17),
+            icon: Icons.access_time,
+          ),
+          _buildMedicationItem(
+            name: "Vitamin D",
+            time: "12:00",
+            dosage: "1 viên",
+            status: "Bỏ lỡ",
+            statusColor: const Color(0xFFFFEBEE), // Đỏ nhạt
+            textColor: const Color(0xFFC62828),
+            icon: Icons.warning_amber_rounded,
+            isLast: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMedicationItem({
+    required String name,
+    required String time,
+    required String dosage,
+    required String status,
+    String? subStatus,
+    required Color statusColor,
+    required Color textColor,
+    required IconData icon,
+    bool isLast = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: isLast
+            ? null
+            : Border(bottom: BorderSide(color: Colors.grey.shade100)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              // Badge trạng thái bên phải
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Icon(icon, size: 14, color: textColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      status,
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "$time • $dosage",
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+          ),
+          if (subStatus != null) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(Icons.check, size: 14, color: textColor),
+                const SizedBox(width: 4),
+                Text(
+                  subStatus,
+                  style: TextStyle(color: textColor, fontSize: 13),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // --- PHẦN LỊCH HẸN (Dữ liệu từ Firestore) ---
+  Widget _buildAppointmentList(List<dynamic> schedules) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Icon(Icons.calendar_month, color: Color(0xFF2563EB)),
+                SizedBox(width: 8),
+                Text(
+                  "Lịch hẹn bác sĩ",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          if (schedules.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(20),
+              child: Center(child: Text("Không có lịch hẹn nào")),
+            )
+          else
+            ...schedules
+                .map(
+                  (item) => _appointmentItem(
+                    item.title,
+                    "${scheduleViewModel.formatDate(item.date)} • ${item.time}",
+                    item.location ?? "Địa chỉ chưa xác định",
+                  ),
+                )
+                .toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _appointmentItem(String title, String date, String location) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.blue.shade50,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(Icons.medical_services_outlined, color: Colors.blue),
+      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      subtitle: Text("$date\n$location"),
+      isThreeLine: true,
+      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+    );
+  }
+
+  // --- CÁC PHẦN HỖ TRỢ KHÁC ---
+  Widget _buildMainScrollContent({required List<Widget> content}) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildHeader(),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(children: content),
+          ),
+          const SizedBox(height: 120),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
@@ -62,111 +291,50 @@ class _ChildDashBoardState extends State<ChildDashboard> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: Colors.white.withOpacity(0.2),
+            child: const Icon(Icons.person, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: Colors.white.withOpacity(0.2),
-                child: const Icon(Icons.person, color: Colors.white),
+              Text(
+                'An Tâm - Con',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'An Tâm - Con',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'Chăm sóc Cha Mẹ',
-                    style: TextStyle(color: Colors.blue.shade100, fontSize: 13),
-                  ),
-                ],
+              Text(
+                'Hệ thống giám sát sức khỏe',
+                style: TextStyle(color: Colors.white70, fontSize: 12),
               ),
             ],
           ),
-          const Icon(Icons.notifications_none, color: Colors.white),
         ],
       ),
     );
   }
 
-  // 2. Alert Card (Cảnh báo chưa uống thuốc)
-  Widget _buildAlertCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFEF2F2),
-        border: Border.all(color: const Color(0xFFEF4444), width: 2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Cảnh báo: Chưa uống thuốc',
-                  style: TextStyle(
-                    color: Color(0xFF7F1D1D),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-                const Text(
-                  'Cha/Mẹ chưa xác nhận uống Vitamin D lúc 12:00. Đã quá 30 phút.',
-                  style: TextStyle(color: Color(0xFFB91C1C), fontSize: 13),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Gọi điện ngay',
-                  style: TextStyle(
-                    color: Colors.red.shade700,
-                    decoration: TextDecoration.underline,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 3. Statistics Grid (90%, 3/3, 2)
-  Widget _buildStatGrid() {
+  Widget _buildStatGrid(int count) {
     return Row(
       children: [
         _statItem(
-          "90%",
-          "Tuân thủ\ntháng này",
-          const Color(0xFFF0FDF4),
-          const Color(0xFF14532D),
-        ),
-        const SizedBox(width: 12),
-        _statItem(
-          "3/3",
-          "Lịch thuốc\nhôm nay",
+          count.toString(),
+          "Lịch hẹn",
           const Color(0xFFEFF6FF),
           const Color(0xFF1E3A8A),
         ),
         const SizedBox(width: 12),
         _statItem(
           "2",
-          "Lịch hẹn\nsắp tới",
-          const Color(0xFFFAF5FF),
-          const Color(0xFF581C87),
+          "Đơn thuốc",
+          const Color(0xFFECFDF5),
+          const Color(0xFF064E3B),
         ),
       ],
     );
@@ -179,7 +347,6 @@ class _ChildDashBoardState extends State<ChildDashboard> {
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: textColor.withOpacity(0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,164 +359,63 @@ class _ChildDashBoardState extends State<ChildDashboard> {
                 color: textColor,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(fontSize: 11, color: textColor.withOpacity(0.8)),
-            ),
+            Text(label, style: TextStyle(fontSize: 12, color: textColor)),
           ],
         ),
       ),
     );
   }
 
-  // 4. Medication List
-  Widget _buildMedicationSchedule() {
-    return _buildSectionCard(
-      title: "Lịch uống thuốc hôm nay",
-      children: [
-        _medItem(
-          "Thuốc Huyết áp",
-          "08:00 • 1 viên",
-          "Đã uống lúc 08:05",
-          Colors.green,
-        ),
-        _medItem("Vitamin D", "12:00 • 1 viên", "Bỏ lỡ", Colors.red),
-      ],
-    );
-  }
-
-  // 5. Appointment List
-  Widget _buildAppointmentSchedule() {
-    return _buildSectionCard(
-      title: "Lịch hẹn sắp tới",
-      children: [
-        _appointmentItem(
-          "Tái khám Tim mạch",
-          "15 Th 11 • 09:00",
-          "BS. Nguyễn Văn A",
-        ),
-      ],
-    );
-  }
-
-  // Helper Widgets
-  Widget _buildSectionCard({
-    required String title,
-    required List<Widget> children,
-  }) {
+  Widget _buildAlertCard() {
     return Container(
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFFFF7ED),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Colors.orange.shade200),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: const Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
+          Icon(Icons.info_outline, color: Colors.orange),
+          SizedBox(width: 12),
+          Expanded(
             child: Text(
-              title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              "Đừng quên nhắc Cha Mẹ uống thuốc đúng giờ!",
+              style: TextStyle(fontSize: 13),
             ),
           ),
-          const Divider(height: 1),
-          ...children,
         ],
       ),
-    );
-  }
-
-  Widget _medItem(String name, String info, String status, Color color) {
-    return ListTile(
-      title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text(info),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(status, style: TextStyle(color: color, fontSize: 12)),
-      ),
-    );
-  }
-
-  Widget _appointmentItem(String title, String date, String doctor) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.blue.shade50,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(Icons.calendar_today, color: Colors.blue),
-      ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text("$date\n$doctor"),
-      isThreeLine: true,
     );
   }
 
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF2563EB),
-      unselectedItemColor: Colors.grey,
       currentIndex: _currentIndex,
-      onTap: _onBottomNavTapped,
-      items: <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.dashboard),
-          label: 'Tổng quan',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.add_circle_outline),
-          label: 'Thêm lịch',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.history),
-          label: 'Lịch sử',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
-          label: 'Cài đặt',
-        ),
+      onTap: (index) {
+        if (index == 1)
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddSchedule()),
+          );
+        if (index == 2)
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const HistoryScreen()),
+          );
+        if (index == 3)
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AnTamSettingApp()),
+          );
+      },
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Trang chủ'),
+        BottomNavigationBarItem(icon: Icon(Icons.add_box), label: 'Thêm lịch'),
+        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Lịch sử'),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Cài đặt'),
       ],
     );
-  }
-
-  void _onBottomNavTapped(int index) {
-    if (index == _currentIndex) return;
-
-    Widget nextScreen;
-
-    switch (index) {
-      case 0:
-        nextScreen = const ChildDashboard();
-        break;
-      case 1:
-        nextScreen = const AddSchedule();
-        break;
-      case 2:
-        nextScreen = const HistoryScreen();
-        break;
-      case 3:
-        nextScreen = const AnTamSettingApp();
-        break;
-      default:
-        return;
-    }
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => nextScreen),
-    );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }
