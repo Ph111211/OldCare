@@ -11,7 +11,8 @@ import 'package:oldcare/views/setting_page.dart';
 import 'package:provider/provider.dart';
 
 class AddSchedule extends StatefulWidget {
-  const AddSchedule({super.key});
+  final bool isDarkMode;
+  const AddSchedule({super.key, this.isDarkMode = false});
 
   @override
   State<AddSchedule> createState() => _AddScheduleState();
@@ -590,7 +591,7 @@ class _AddScheduleState extends State<AddSchedule> {
         nextScreen = const HistoryScreen();
         break;
       case 3:
-        nextScreen = const AnTamSettingApp();
+        nextScreen = AnTamSettingApp(isDarkModeI: widget.isDarkMode);
         break;
       default:
         return;
