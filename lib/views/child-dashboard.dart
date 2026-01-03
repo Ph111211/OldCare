@@ -447,7 +447,7 @@ class _ChildDashBoardState extends State<ChildDashboard> {
     final pillVM = Provider.of<SchedulePillViewModel>(context);
 
     // Giả định một ID người dùng cố định để demo (Thay thế bằng ID thực tế từ Auth)
-    const String currentUserId = "5YkD1LvGepM15VjQ30GDc1jMrwC2";
+    // const String currentUserId = ;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
@@ -471,9 +471,7 @@ class _ChildDashBoardState extends State<ChildDashboard> {
 
                   // 1. PHẦN LỊCH UỐNG THUỐC (Sử dụng dữ liệu thực từ Stream)
                   StreamBuilder<List<SchedulePill>>(
-                    stream: pillVM.getSchedulePillsByChildIdStream(
-                      currentUserId,
-                    ),
+                    stream: pillVM.getSchedulePillsByCurrentChildStream(),
                     builder: (context, pillSnapshot) {
                       final pills = pillSnapshot.data ?? [];
                       return _buildMedicationSchedule(pills, pillVM);
