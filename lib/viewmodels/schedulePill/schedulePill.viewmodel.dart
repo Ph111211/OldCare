@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:oldcare/models/schedulePill.model.dart';
@@ -35,9 +36,20 @@ class SchedulePillViewModel extends ChangeNotifier {
   // --- READ METHODS (STREAMS) ---
 
   /// Lắng nghe thay đổi real-time theo parentId (Dùng cho Dashboard)
-  Stream<List<SchedulePill>> getSchedulePillsByParentIdStream(String childId) {
-    _currentParentId = childId;
-    return _schedulePillService.getSchedulePillsByParentIdStream(childId);
+  Future<Stream<List<SchedulePill>>> getSchedulePillsByParentIdStream() async {
+    // _currentParentId = parentId;
+    final _auth = FirebaseAuth.instance;
+    final _firestore = FirebaseFirestore.instance;
+    final String uid = _auth.currentUser!.uid;
+    final doc = await _firestore.collection('users').doc(uid).get();
+    final String? childId = doc.data()!['childId'];
+    return _schedulePillService.getSchedulePillsByChildIdStream(childId!);
+  }
+
+  Future<Stream<List<SchedulePill>>> getSchedulePillsByChildIdStream(
+    String currentId,
+  ) async {
+    return _schedulePillService.getSchedulePillsByChildIdStream(currentId);
   }
 
   /// Lắng nghe thay đổi real-time theo childId
