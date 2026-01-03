@@ -12,7 +12,7 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  int _currentIndex = 2;
+  final int _currentIndex = 2;
 
   final List<String> _days = [
     'Thứ 2, 12/11',
