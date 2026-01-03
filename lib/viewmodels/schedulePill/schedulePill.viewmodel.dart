@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:oldcare/models/schedulePill.model.dart';
 import 'package:oldcare/models/user.model.dart';
@@ -40,9 +41,18 @@ class SchedulePillViewModel extends ChangeNotifier {
   }
 
   /// Lắng nghe thay đổi real-time theo childId
-  Stream<List<SchedulePill>> getSchedulePillsByChildIdStream(String childId) {
-    _currentChildId = childId;
-    return _schedulePillService.getSchedulePillsByChildIdStream(childId);
+  Stream<List<SchedulePill>> getSchedulePillsByCurrentChildStream() {
+    // 1. Lấy user hiện tại từ FirebaseAuth
+    final user = FirebaseAuth.instance.currentUser;
+
+    // 2. Kiểm tra nếu user đã đăng nhập thì lấy UID, nếu chưa thì trả về Stream rỗng
+    if (user != null) {
+      final String uid = user.uid; // Đây chính là UID bạn cần
+      return _schedulePillService.getSchedulePillsByChildIdStream(uid);
+    } else {
+      // Trả về một Stream rỗng nếu không có user để tránh crash ứng dụng
+      return Stream.value([]);
+    }
   }
 
   // --- WRITE METHODS (SAVE / UPDATE / DELETE) ---
