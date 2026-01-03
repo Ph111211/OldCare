@@ -42,7 +42,8 @@ class SchedulePillViewModel extends ChangeNotifier {
     final _firestore = FirebaseFirestore.instance;
     final String uid = _auth.currentUser!.uid;
     final doc = await _firestore.collection('users').doc(uid).get();
-    final String? childId = doc.data()!['childId'];
+    final String? childId = doc.data()!['child_id'];
+    print(uid);
     return _schedulePillService.getSchedulePillsByChildIdStream(childId!);
   }
 
