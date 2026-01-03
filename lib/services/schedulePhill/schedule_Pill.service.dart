@@ -71,7 +71,7 @@ class SchedulePillService {
   /// READ - Stream lấy lịch uống thuốc theo parentId (Cập nhật thời gian thực cho Dashboard)
   Stream<List<SchedulePill>> getSchedulePillsByParentIdStream(String parentId) {
     return _schedulePillsRef
-        .where('childId', isEqualTo: parentId)
+        .where('parentId', isEqualTo: parentId)
         .snapshots()
         .map(
           (snapshot) => snapshot.docs
@@ -159,9 +159,9 @@ class SchedulePillService {
     }
   }
 
-  Stream<List<SchedulePill>> getSchedulePillsByChildIdStream(String parentId) {
+  Stream<List<SchedulePill>> getSchedulePillsByChildIdStream(String childId) {
     return _schedulePillsRef
-        .where('parentId', isEqualTo: parentId)
+        .where('childId', isEqualTo: childId)
         .snapshots()
         .map(
           (snapshot) => snapshot.docs
