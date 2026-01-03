@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'views/login_page.dart';
-import 'views/add_schedule.dart';
-import 'views/child-dashboard.dart';
 import 'views/history_page.dart';
 import 'routes/route.dart';
 
@@ -26,10 +24,7 @@ class AuthGate extends StatelessWidget {
           return LoginScreen();
         }
         // ✅ ĐÃ LOGIN
-        return MaterialApp(
-          home: HistoryScreen(),
-          routes: appRoutes,
-        );
+        return MaterialApp(home: HistoryScreen(), routes: appRoutes);
       },
     );
   }
