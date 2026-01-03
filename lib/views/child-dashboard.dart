@@ -8,7 +8,8 @@ import '../views/setting_page.dart';
 import '../views/history_page.dart';
 
 class ChildDashboard extends StatefulWidget {
-  const ChildDashboard({super.key});
+  final bool isDarkMode;
+  const ChildDashboard({super.key, this.isDarkMode = false});
 
   @override
   State<ChildDashboard> createState() => _ChildDashBoardState();
@@ -441,7 +442,7 @@ class _ChildDashBoardState extends State<ChildDashboard> {
         else if (index == 2)
           next = const HistoryScreen();
         else
-          next = const AnTamSettingApp();
+          next = AnTamSettingApp(isDarkModeI: widget.isDarkMode);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => next),
