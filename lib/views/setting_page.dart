@@ -165,14 +165,14 @@ class CITContent extends StatefulWidget {
 }
 
 class _CITContentState extends State<CITContent> {
-  String _userName = "Nguyễn Văn A";
-  String _userEmail = "nguyenvana@email.com";
-  String _userPhone = "09xx xxx xxx";
-  String _userAddress = "";
+  final String _userName = "Nguyễn Văn A";
+  final String _userEmail = "nguyenvana@email.com";
+  final String _userPhone = "09xx xxx xxx";
+  final String _userAddress = "";
 
   bool _isMedicineReminderOn = true;
   bool _isEmergencyOn = true;
-  bool _isDailyReportOn = false;
+  final bool _isDailyReportOn = false;
 
   @override
   Widget build(BuildContext context) {
