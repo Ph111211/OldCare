@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../views/add_schedule.dart';
 import '../views/child-dashboard.dart';
 import '../views/setting_page.dart';
-import '../views/history_page.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -25,50 +24,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  void _loadData() {
-    debugPrint('Loading history data...');
-  }
-
-  // void _onBottomNavTapped(int index) {
-  //   setState(() {
-  //     _currentIndex = index;
-  //   });
-
-  //   switch (index) {
-  //     case 0:
-  //       debugPrint('Navigate to Dashboard');
-  //       break;
-  //     case 1:
-  //       debugPrint('Navigate to Add Schedule');
-  //       break;
-  //     case 2:
-  //       debugPrint('Already on History');
-  //       break;
-  //     case 3:
-  //       debugPrint('Navigate to Settings');
-  //       break;
-  //   }
-  // }
-
-  @override
   Widget build(BuildContext context) {
+    // Kiểm tra chế độ Dark Mode hiện tại
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      // Sử dụng màu nền từ Theme để đồng bộ với Setting Page
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: <Widget>[
-          _buildHeader(),
+          _buildHeader(isDark),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: <Widget>[
-                  _buildComplianceCard(),
+                  _buildComplianceCard(isDark),
                   const SizedBox(height: 20),
-                  _buildHistoryList(),
+                  _buildHistoryList(isDark),
                 ],
               ),
             ),
@@ -79,15 +52,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isDark) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(top: 60, left: 16, right: 16, bottom: 24),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
+        // Giữ màu gradient đặc trưng hoặc làm tối đi trong Dark Mode
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: <Color>[Color(0xFF2563EB), Color(0xFF1D4ED8)],
+          colors: isDark
+              ? <Color>[
+                  const Color(0xFF1E3A8A),
+                  const Color(0xFF111827),
+                ] // Dark Blue/Gray
+              : <Color>[
+                  const Color(0xFF2563EB),
+                  const Color(0xFF1D4ED8),
+                ], // Primary Blue
         ),
       ),
       child: Row(
@@ -119,35 +101,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Colors.white),
-            onPressed: () {
-              debugPrint('Notifications tapped');
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () {
-              debugPrint('Settings tapped');
-            },
+            onPressed: () {},
           ),
         ],
       ),
     );
   }
 
-  Widget _buildComplianceCard() {
+  Widget _buildComplianceCard(bool isDark) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: _cardDecoration(),
+      decoration: _cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Text(
+          Text(
             'Thống kê tuân thủ',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF333333),
+              color: isDark ? Colors.white : const Color(0xFF333333),
             ),
           ),
           const SizedBox(height: 12),
@@ -156,14 +130,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
             height: 120,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              gradient: const LinearGradient(
-                colors: <Color>[Color(0xFFE6F2FF), Color(0xFFF0FFF0)],
+              // Màu nền biểu đồ nhẹ nhàng hơn trong Dark Mode
+              gradient: LinearGradient(
+                colors: isDark
+                    ? <Color>[const Color(0xFF374151), const Color(0xFF1F2937)]
+                    : <Color>[const Color(0xFFE6F2FF), const Color(0xFFF0FFF0)],
               ),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
                 'Biểu đồ tuân thủ theo tuần/tháng',
-                style: TextStyle(color: Color(0xFF888888), fontSize: 13),
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : const Color(0xFF888888),
+                  fontSize: 13,
+                ),
               ),
             ),
           ),
@@ -172,34 +152,38 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildHistoryList() {
+  Widget _buildHistoryList(bool isDark) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: _cardDecoration(),
+      decoration: _cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Text(
+          Text(
             'Lịch sử 7 ngày',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF333333),
+              color: isDark ? Colors.white : const Color(0xFF333333),
             ),
           ),
           const SizedBox(height: 12),
-          ..._days.map((String day) => _buildHistoryItem(day)),
+          ..._days.map((String day) => _buildHistoryItem(day, isDark)),
         ],
       ),
     );
   }
 
-  Widget _buildHistoryItem(String dayLabel) {
+  Widget _buildHistoryItem(String dayLabel, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE))),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? Colors.grey[800]! : const Color(0xFFEEEEEE),
+          ),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -209,19 +193,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
             children: <Widget>[
               Text(
                 dayLabel,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w500,
                   fontSize: 15,
+                  color: isDark ? Colors.grey[300] : Colors.black,
                 ),
               ),
               const SizedBox(height: 6),
               Row(
                 children: <Widget>[
-                  _buildStatusChip('Sáng'),
+                  _buildStatusChip('Sáng', isDark),
                   const SizedBox(width: 6),
-                  _buildStatusChip('Trưa'),
+                  _buildStatusChip('Trưa', isDark),
                   const SizedBox(width: 6),
-                  _buildStatusChip('Tối'),
+                  _buildStatusChip('Tối', isDark),
                 ],
               ),
             ],
@@ -229,7 +214,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           const Text(
             '100% tuân thủ',
             style: TextStyle(
-              color: Color(0xFF1A7F1A),
+              color: Color(0xFF4ADE80), // Xanh lá sáng hơn cho Dark Mode
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),
@@ -239,27 +224,33 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildStatusChip(String label) {
+  Widget _buildStatusChip(String label, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: const Color(0xFFD4F5D4),
+        color: isDark ? const Color(0xFF064E3B) : const Color(0xFFD4F5D4),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         label,
-        style: const TextStyle(color: Color(0xFF1A7F1A), fontSize: 11),
+        style: TextStyle(
+          color: isDark ? const Color(0xFF34D399) : const Color(0xFF1A7F1A),
+          fontSize: 11,
+        ),
       ),
     );
   }
 
-  BoxDecoration _cardDecoration() {
+  BoxDecoration _cardDecoration(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(12),
       boxShadow: <BoxShadow>[
         BoxShadow(
-          color: Colors.black.withOpacity(0.05),
+          color: isDark
+              ? Colors.black.withOpacity(0.3)
+              : Colors.black.withOpacity(0.05),
           blurRadius: 4,
           offset: const Offset(0, 1),
         ),
@@ -270,36 +261,29 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
+      backgroundColor: Theme.of(context).cardColor, // Đồng bộ màu nền nav
       selectedItemColor: const Color(0xFF2563EB),
       unselectedItemColor: Colors.grey,
       currentIndex: _currentIndex,
       onTap: _onBottomNavTapped,
-      items: <BottomNavigationBarItem>[
+      items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: const Icon(Icons.dashboard),
+          icon: Icon(Icons.dashboard),
           label: 'Tổng quan',
         ),
-        const BottomNavigationBarItem(
+        BottomNavigationBarItem(
           icon: Icon(Icons.add_circle_outline),
           label: 'Thêm lịch',
         ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.history),
-          label: 'Lịch sử',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
-          label: 'Cài đặt',
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Lịch sử'),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Cài đặt'),
       ],
     );
   }
 
   void _onBottomNavTapped(int index) {
     if (index == _currentIndex) return;
-
     Widget nextScreen;
-
     switch (index) {
       case 0:
         nextScreen = const ChildDashboard();
@@ -316,15 +300,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
       default:
         return;
     }
-
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => nextScreen),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }
