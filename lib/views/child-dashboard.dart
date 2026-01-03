@@ -471,7 +471,7 @@ class _ChildDashBoardState extends State<ChildDashboard> {
 
                   // 1. PHẦN LỊCH UỐNG THUỐC (Sử dụng dữ liệu thực từ Stream)
                   StreamBuilder<List<SchedulePill>>(
-                    stream: pillVM.getSchedulePillsByParentIdStream(
+                    stream: pillVM.getSchedulePillsByChildIdStream(
                       currentUserId,
                     ),
                     builder: (context, pillSnapshot) {
