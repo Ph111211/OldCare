@@ -350,7 +350,7 @@ class SchedulePillService {
       QuerySnapshot snapshot = await _schedulePillsRef
           .orderBy('medicineName')
           .startAt([keyword])
-          .endAt([keyword + '\uf8ff'])
+          .endAt(['$keyword\uf8ff'])
           .get();
 
       return snapshot.docs
