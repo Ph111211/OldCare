@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oldcare/services/auth/auth_service.dart';
+import 'package:provider/provider.dart';
 import '../viewmodels/auth.viewmodel.dart';
 import '../views/add_schedule.dart';
 import '../views/child-dashboard.dart';
@@ -173,6 +174,8 @@ class _CITContentState extends State<CITContent> {
   bool _isMedicineReminderOn = true;
   bool _isEmergencyOn = true;
   final bool _isDailyReportOn = false;
+  // final AuthService _authService = AuthService();
+  final AuthViewModel _authViewModel = AuthViewModel(AuthService());
 
   @override
   Widget build(BuildContext context) {
@@ -363,7 +366,10 @@ class _CITContentState extends State<CITContent> {
           foregroundColor: Colors.red,
           minimumSize: const Size(double.infinity, 50),
         ),
-        onPressed: () {},
+        onPressed: () {
+          // Provider.of<AuthViewModel>(context, listen: false).logout();
+          _authViewModel.logout();
+        },
         icon: const Icon(Icons.logout),
         label: const Text(
           'Đăng xuất',
