@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:oldcare/views/child-dashboard.dart';
+import 'package:oldcare/views/parent_page.dart';
 import 'views/login_page.dart';
 import 'views/history_page.dart';
 import 'routes/route.dart';
@@ -23,8 +25,12 @@ class AuthGate extends StatelessWidget {
         if (!snapshot.hasData) {
           return LoginScreen();
         }
+        if (snapshot.data?.email?.endsWith("@oldcare.com") ?? false) {
+          // Thực hiện hành động nếu email có đuôi @oldcare.com
+          return MaterialApp(home: GiaoDiNChNh(), routes: appRoutes);
+        }
         // ✅ ĐÃ LOGIN
-        return MaterialApp(home: HistoryScreen(), routes: appRoutes);
+        return MaterialApp(home: ChildDashboard(), routes: appRoutes);
       },
     );
   }
