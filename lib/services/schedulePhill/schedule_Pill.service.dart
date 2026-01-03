@@ -1,19 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:oldcare/models/schedulePill.model.dart';
+import 'package:oldcare/viewmodels/schedulePill/schedulePill.viewmodel.dart';
 
 class SchedulePillService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collection = 'schedule_pills';
 
-  // Reference đến collection
-  CollectionReference get _schedulePillsRef =>
+  // Reference đến collection với kiểu Map cụ thể để tránh lỗi subtype
+  CollectionReference<Map<String, dynamic>> get _schedulePillsRef =>
       _firestore.collection(_collection);
 
   /// CREATE - Tạo lịch uống thuốc mới
   Future<String> createSchedulePill(SchedulePill schedulePill) async {
     try {
+      // Sử dụng toJson() đã cập nhật để bao gồm trường 'status'
       DocumentReference docRef = await _schedulePillsRef.add(
-        schedulePill.toMap(),
+        schedulePill.toJson(),
       );
       return docRef.id;
     } catch (e) {
@@ -21,33 +25,82 @@ class SchedulePillService {
     }
   }
 
-  /// READ - Lấy tất cả lịch uống thuốc
-  Future<List<SchedulePill>> getAllSchedulePills() async {
-    try {
-      QuerySnapshot snapshot = await _schedulePillsRef
-          .orderBy('createdAt', descending: true)
-          .get();
+  Future<void> _saveMedicationSchedule(
+    BuildContext context,
+    SchedulePillViewModel vm,
+  ) async {
+    // 1. Lấy thông tin User hiện tại từ Firebase
+    final firebaseUser = FirebaseAuth.instance.currentUser;
 
-      return snapshot.docs
-          .map(
-            (doc) => SchedulePill.fromMap(
-              doc.id,
-              doc.data() as Map<String, dynamic>,
-            ),
-          )
-          .toList();
+    if (firebaseUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng đăng nhập để thực hiện thao tác này'),
+        ),
+      );
+      return;
+    }
+
+    // 2. Xác định các ID
+    // Theo yêu cầu của bạn: childId = ID của người dùng hiện tại (người con)
+    final String currentChildId = firebaseUser.uid;
+
+    // Lưu ý: parentId thường là ID của người già được quản lý.
+    // Nếu bạn chưa có logic chọn người già, tạm thời để trống hoặc dùng chính ID người con nếu tự quản lý.
+    // Ở đây tôi giả định bạn đang gán lịch cho một Parent cụ thể nào đó.
+    final String targetParentId = "ID_NGUOI_GIA_CAN_QUAN_LY";
+
+    // 3. Gọi hàm save với childId là ID user hiện tại
+    final success = await vm.saveSchedulePill(
+      targetParentId, // parentId
+      currentChildId, // childId (Gán bằng ID User hiện tại)
+    );
+
+    if (success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lưu lịch uống thuốc thành công!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      // Bạn có thể xóa form sau khi lưu thành công
+      vm.clearForm();
+    }
+  }
+
+  /// READ - Stream lấy lịch uống thuốc theo parentId (Cập nhật thời gian thực cho Dashboard)
+  Stream<List<SchedulePill>> getSchedulePillsByParentIdStream(String parentId) {
+    return _schedulePillsRef
+        .where('childId', isEqualTo: parentId)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => SchedulePill.fromMap(doc.data(), doc.id))
+              .toList(),
+        );
+  }
+
+  /// UPDATE - Cập nhật trạng thái thuốc Real-time (Đã uống / Bỏ lỡ)
+  /// Giúp hiển thị đúng các Badge màu sắc trên giao diện
+  Future<void> updatePillStatus(String id, String status) async {
+    try {
+      await _schedulePillsRef.doc(id).update({
+        'status': status,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
-      throw Exception('Lỗi khi lấy danh sách lịch uống thuốc: $e');
+      throw Exception('Lỗi khi cập nhật trạng thái thuốc: $e');
     }
   }
 
   /// READ - Lấy lịch uống thuốc theo ID
   Future<SchedulePill?> getSchedulePillById(String id) async {
     try {
-      DocumentSnapshot doc = await _schedulePillsRef.doc(id).get();
-
-      if (doc.exists) {
-        return SchedulePill.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+      DocumentSnapshot<Map<String, dynamic>> doc = await _schedulePillsRef
+          .doc(id)
+          .get();
+      if (doc.exists && doc.data() != null) {
+        return SchedulePill.fromMap(doc.data()!, doc.id);
       }
       return null;
     } catch (e) {
@@ -55,228 +108,12 @@ class SchedulePillService {
     }
   }
 
-  /// READ - Lấy lịch uống thuốc theo parentId
-  Future<List<SchedulePill>> getSchedulePillsByParentId(String parentId) async {
-    try {
-      QuerySnapshot snapshot = await _schedulePillsRef
-          .where('parentId', isEqualTo: parentId)
-          .orderBy('createdAt', descending: true)
-          .get();
-
-      return snapshot.docs
-          .map(
-            (doc) => SchedulePill.fromMap(
-              doc.id,
-              doc.data() as Map<String, dynamic>,
-            ),
-          )
-          .toList();
-    } catch (e) {
-      throw Exception('Lỗi khi lấy lịch uống thuốc theo parentId: $e');
-    }
-  }
-
-  /// READ - Lấy lịch uống thuốc theo childId
-  Future<List<SchedulePill>> getSchedulePillsByChildId(String childId) async {
-    try {
-      QuerySnapshot snapshot = await _schedulePillsRef
-          .where('childId', isEqualTo: childId)
-          .orderBy('createdAt', descending: true)
-          .get();
-
-      return snapshot.docs
-          .map(
-            (doc) => SchedulePill.fromMap(
-              doc.id,
-              doc.data() as Map<String, dynamic>,
-            ),
-          )
-          .toList();
-    } catch (e) {
-      throw Exception('Lỗi khi lấy lịch uống thuốc theo childId: $e');
-    }
-  }
-
-  /// READ - Lấy lịch uống thuốc theo parentId và childId
-  Future<List<SchedulePill>> getSchedulePillsByParentAndChild(
-    String parentId,
-    String childId,
-  ) async {
-    try {
-      QuerySnapshot snapshot = await _schedulePillsRef
-          .where('parentId', isEqualTo: parentId)
-          .where('childId', isEqualTo: childId)
-          .orderBy('createdAt', descending: true)
-          .get();
-
-      return snapshot.docs
-          .map(
-            (doc) => SchedulePill.fromMap(
-              doc.id,
-              doc.data() as Map<String, dynamic>,
-            ),
-          )
-          .toList();
-    } catch (e) {
-      throw Exception('Lỗi khi lấy lịch uống thuốc: $e');
-    }
-  }
-
-  /// READ - Lấy lịch uống thuốc theo tên thuốc
-  Future<List<SchedulePill>> getSchedulePillsByMedicineName(
-    String medicineName,
-  ) async {
-    try {
-      QuerySnapshot snapshot = await _schedulePillsRef
-          .where('medicineName', isEqualTo: medicineName)
-          .orderBy('createdAt', descending: true)
-          .get();
-
-      return snapshot.docs
-          .map(
-            (doc) => SchedulePill.fromMap(
-              doc.id,
-              doc.data() as Map<String, dynamic>,
-            ),
-          )
-          .toList();
-    } catch (e) {
-      throw Exception('Lỗi khi tìm kiếm lịch uống thuốc: $e');
-    }
-  }
-
-  /// READ - Lấy lịch uống thuốc theo giờ
-  Future<List<SchedulePill>> getSchedulePillsByTime(String time) async {
-    try {
-      QuerySnapshot snapshot = await _schedulePillsRef
-          .where('time', isEqualTo: time)
-          .orderBy('createdAt', descending: true)
-          .get();
-
-      return snapshot.docs
-          .map(
-            (doc) => SchedulePill.fromMap(
-              doc.id,
-              doc.data() as Map<String, dynamic>,
-            ),
-          )
-          .toList();
-    } catch (e) {
-      throw Exception('Lỗi khi lấy lịch uống thuốc theo giờ: $e');
-    }
-  }
-
-  /// READ - Stream lấy tất cả lịch uống thuốc (real-time)
-  Stream<List<SchedulePill>> getSchedulePillsStream() {
-    return _schedulePillsRef
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map(
-                (doc) => SchedulePill.fromMap(
-                  doc.id,
-                  doc.data() as Map<String, dynamic>,
-                ),
-              )
-              .toList(),
-        );
-  }
-
-  /// READ - Stream lấy lịch uống thuốc theo parentId (real-time)
-  Stream<List<SchedulePill>> getSchedulePillsByParentIdStream(String parentId) {
-    return _schedulePillsRef
-        .where('parentId', isEqualTo: parentId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map(
-                (doc) => SchedulePill.fromMap(
-                  doc.id,
-                  doc.data() as Map<String, dynamic>,
-                ),
-              )
-              .toList(),
-        );
-  }
-
-  /// READ - Stream lấy lịch uống thuốc theo childId (real-time)
-  Stream<List<SchedulePill>> getSchedulePillsByChildIdStream(String childId) {
-    return _schedulePillsRef
-        .where('childId', isEqualTo: childId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map(
-                (doc) => SchedulePill.fromMap(
-                  doc.id,
-                  doc.data() as Map<String, dynamic>,
-                ),
-              )
-              .toList(),
-        );
-  }
-
-  /// READ - Stream lấy lịch uống thuốc theo parentId và childId (real-time)
-  Stream<List<SchedulePill>> getSchedulePillsByParentAndChildStream(
-    String parentId,
-    String childId,
-  ) {
-    return _schedulePillsRef
-        .where('parentId', isEqualTo: parentId)
-        .where('childId', isEqualTo: childId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map(
-                (doc) => SchedulePill.fromMap(
-                  doc.id,
-                  doc.data() as Map<String, dynamic>,
-                ),
-              )
-              .toList(),
-        );
-  }
-
-  /// UPDATE - Cập nhật lịch uống thuốc
+  /// UPDATE - Cập nhật toàn bộ thông tin thuốc
   Future<void> updateSchedulePill(String id, SchedulePill schedulePill) async {
     try {
-      await _schedulePillsRef.doc(id).update(schedulePill.toMap());
+      await _schedulePillsRef.doc(id).update(schedulePill.toJson());
     } catch (e) {
-      throw Exception('Lỗi khi cập nhật lịch uống thuốc: $e');
-    }
-  }
-
-  /// UPDATE - Cập nhật một số trường cụ thể
-  Future<void> updateSchedulePillFields(
-    String id,
-    Map<String, dynamic> fields,
-  ) async {
-    try {
-      await _schedulePillsRef.doc(id).update(fields);
-    } catch (e) {
-      throw Exception('Lỗi khi cập nhật lịch uống thuốc: $e');
-    }
-  }
-
-  /// UPDATE - Cập nhật thời gian uống thuốc
-  Future<void> updatePillTime(String id, String newTime) async {
-    try {
-      await _schedulePillsRef.doc(id).update({'time': newTime});
-    } catch (e) {
-      throw Exception('Lỗi khi cập nhật thời gian: $e');
-    }
-  }
-
-  /// UPDATE - Cập nhật liều lượng
-  Future<void> updatePillDosage(String id, String newDosage) async {
-    try {
-      await _schedulePillsRef.doc(id).update({'dosage': newDosage});
-    } catch (e) {
-      throw Exception('Lỗi khi cập nhật liều lượng: $e');
+      throw Exception('Lỗi khi cập nhật: $e');
     }
   }
 
@@ -285,110 +122,51 @@ class SchedulePillService {
     try {
       await _schedulePillsRef.doc(id).delete();
     } catch (e) {
-      throw Exception('Lỗi khi xóa lịch uống thuốc: $e');
+      throw Exception('Lỗi khi xóa: $e');
     }
   }
 
-  /// DELETE - Xóa nhiều lịch uống thuốc
-  Future<void> deleteMultipleSchedulePills(List<String> ids) async {
+  /// UTILITY - Đếm số lịch thuốc (Sử dụng AggregateQuery để tối ưu chi phí)
+  Future<int> countSchedulePillsByParentId(String parentId) async {
     try {
-      WriteBatch batch = _firestore.batch();
-
-      for (String id in ids) {
-        batch.delete(_schedulePillsRef.doc(id));
-      }
-
-      await batch.commit();
-    } catch (e) {
-      throw Exception('Lỗi khi xóa nhiều lịch uống thuốc: $e');
-    }
-  }
-
-  /// DELETE - Xóa tất cả lịch uống thuốc của một parent
-  Future<void> deleteSchedulePillsByParentId(String parentId) async {
-    try {
-      QuerySnapshot snapshot = await _schedulePillsRef
+      AggregateQuerySnapshot snapshot = await _schedulePillsRef
           .where('parentId', isEqualTo: parentId)
+          .count()
           .get();
-
-      WriteBatch batch = _firestore.batch();
-
-      for (var doc in snapshot.docs) {
-        batch.delete(doc.reference);
-      }
-
-      await batch.commit();
+      // Xử lý null-safety cho kiểu int?
+      return snapshot.count ?? 0;
     } catch (e) {
-      throw Exception('Lỗi khi xóa lịch uống thuốc: $e');
+      return 0;
     }
   }
 
-  /// DELETE - Xóa tất cả lịch uống thuốc của một child
-  Future<void> deleteSchedulePillsByChildId(String childId) async {
-    try {
-      QuerySnapshot snapshot = await _schedulePillsRef
-          .where('childId', isEqualTo: childId)
-          .get();
-
-      WriteBatch batch = _firestore.batch();
-
-      for (var doc in snapshot.docs) {
-        batch.delete(doc.reference);
-      }
-
-      await batch.commit();
-    } catch (e) {
-      throw Exception('Lỗi khi xóa lịch uống thuốc: $e');
-    }
-  }
-
-  /// SEARCH - Tìm kiếm lịch uống thuốc theo tên thuốc (partial match)
+  /// SEARCH - Tìm kiếm theo tên thuốc
   Future<List<SchedulePill>> searchSchedulePillsByMedicineName(
     String keyword,
   ) async {
     try {
-      QuerySnapshot snapshot = await _schedulePillsRef
+      QuerySnapshot<Map<String, dynamic>> snapshot = await _schedulePillsRef
           .orderBy('medicineName')
           .startAt([keyword])
           .endAt(['$keyword\uf8ff'])
           .get();
 
       return snapshot.docs
-          .map(
-            (doc) => SchedulePill.fromMap(
-              doc.id,
-              doc.data() as Map<String, dynamic>,
-            ),
-          )
+          .map((doc) => SchedulePill.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      throw Exception('Lỗi khi tìm kiếm lịch uống thuốc: $e');
+      throw Exception('Lỗi khi tìm kiếm: $e');
     }
   }
 
-  /// UTILITY - Đếm số lịch uống thuốc của parent
-  Future<int> countSchedulePillsByParentId(String parentId) async {
-    try {
-      QuerySnapshot snapshot = await _schedulePillsRef
-          .where('parentId', isEqualTo: parentId)
-          .get();
-
-      return snapshot.docs.length;
-    } catch (e) {
-      throw Exception('Lỗi khi đếm lịch uống thuốc: $e');
-    }
-  }
-
-  /// UTILITY - Đếm số lịch uống thuốc của child
-  Future<int> countSchedulePillsByChildId(String childId) async {
-    try {
-      QuerySnapshot snapshot = await _schedulePillsRef
-          .where('childId', isEqualTo: childId)
-          .get();
-
-      return snapshot.docs.length;
-    } catch (e) {
-      throw Exception('Lỗi khi đếm lịch uống thuốc: $e');
-    }
+  Stream<List<SchedulePill>> getSchedulePillsByChildIdStream(String parentId) {
+    return _schedulePillsRef
+        .where('parentId', isEqualTo: parentId)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => SchedulePill.fromMap(doc.data(), doc.id))
+              .toList(),
+        );
   }
 }
