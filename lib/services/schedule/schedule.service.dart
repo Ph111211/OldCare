@@ -213,7 +213,7 @@ class ScheduleService {
       QuerySnapshot snapshot = await _schedulesRef
           .orderBy('title')
           .startAt([keyword])
-          .endAt([keyword + '\uf8ff'])
+          .endAt(['$keyword\uf8ff'])
           .get();
 
       return snapshot.docs
