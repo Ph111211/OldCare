@@ -24,7 +24,7 @@ class Schedule {
       date: _convertToDateTime(map['date']),
       time: map['time'] ?? '',
       note: map['note'],
-      location: map['location'], // Thêm dòng này
+      // location: map['location'], // Thêm dòng này
       createdAt: _convertToDateTime(map['createdAt']),
     );
   }
@@ -36,7 +36,7 @@ class Schedule {
       'date': date.toIso8601String(),
       'time': time,
       'note': note,
-      'location': location, // Thêm dòng này
+      // 'location': location, // Thêm dòng này
       'createdAt': createdAt.toIso8601String(),
     };
   }
