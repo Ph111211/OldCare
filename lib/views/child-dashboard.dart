@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oldcare/services/notification/notification_service.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/Schedule/schedule.viewmodel.dart';
 import '../../viewmodels/schedulePill/schedulePill.viewmodel.dart';
@@ -23,7 +24,9 @@ class _ChildDashBoardState extends State<ChildDashboard> {
   Widget build(BuildContext context) {
     // Truy cập ViewModel qua Provider
     final pillVM = Provider.of<SchedulePillViewModel>(context);
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationService().listenToSOSAlerts(context);
+    });
     // Kiểm tra chế độ Dark Mode từ Theme hệ thống
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -195,17 +198,15 @@ class _ChildDashBoardState extends State<ChildDashboard> {
               ),
             )
           else
-            ...pills
-                .map(
-                  (pill) => _buildMedicationItem(
-                    pill,
-                    vm,
-                    isDark,
-                    textColor,
-                    subTextColor,
-                  ),
-                )
-                .toList(),
+            ...pills.map(
+              (pill) => _buildMedicationItem(
+                pill,
+                vm,
+                isDark,
+                textColor,
+                subTextColor,
+              ),
+            ),
         ],
       ),
     );
@@ -309,27 +310,25 @@ class _ChildDashBoardState extends State<ChildDashboard> {
               ),
             )
           else
-            ...schedules
-                .map(
-                  (item) => ListTile(
-                    leading: Icon(
-                      Icons.medical_services,
-                      color: isDark ? Colors.blue[300] : Colors.blue,
-                    ),
-                    title: Text(
-                      item.title,
-                      style: TextStyle(
-                        color: textColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    subtitle: Text(
-                      "${item.time}\n${item.note ?? ''}",
-                      style: TextStyle(color: subTextColor),
-                    ),
+            ...schedules.map(
+              (item) => ListTile(
+                leading: Icon(
+                  Icons.medical_services,
+                  color: isDark ? Colors.blue[300] : Colors.blue,
+                ),
+                title: Text(
+                  item.title,
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
                   ),
-                )
-                .toList(),
+                ),
+                subtitle: Text(
+                  "${item.time}\n${item.note ?? ''}",
+                  style: TextStyle(color: subTextColor),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -437,9 +436,9 @@ class _ChildDashBoardState extends State<ChildDashboard> {
       onTap: (index) {
         if (index == 0) return;
         Widget next;
-        if (index == 1)
+        if (index == 1) {
           next = const AddSchedule();
-        else if (index == 2)
+        } else if (index == 2)
           next = const HistoryScreen();
         else
           next = AnTamSettingApp(isDarkModeI: widget.isDarkMode);
