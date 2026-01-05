@@ -7,6 +7,7 @@ class NotificationService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Hàm lắng nghe thông báo SOS dành riêng cho Child
+  // Trong NotificationService phía người con
   void listenToSOSAlerts(BuildContext context) {
     final String? currentUserId = _auth.currentUser?.uid;
     if (currentUserId == null) return;
@@ -14,19 +15,60 @@ class NotificationService {
     _db
         .collection('notifications')
         .where('receiverId', isEqualTo: currentUserId)
-        .where('type', isEqualTo: 'SOS')
         .where('isRead', isEqualTo: false)
         .snapshots()
         .listen((snapshot) {
           for (var change in snapshot.docChanges) {
             if (change.type == DocumentChangeType.added) {
               final data = change.doc.data();
-              if (data != null) {
-                _showEmergencyDialog(context, change.doc.id, data);
+              final type = data?['type'];
+
+              if (type == 'SOS') {
+                // Nếu là SOS thì hiện Dialog khẩn cấp
+                _showEmergencyDialog(context, change.doc.id, data!);
+              } else if (type == 'CALL') {
+                // Nếu là CALL thì chỉ hiện thông báo SnackBar (thông báo chờ)
+                _showSimpleSnackBar(context, change.doc.id, data!);
               }
             }
           }
         });
+  }
+
+  void _showSimpleSnackBar(
+    BuildContext context,
+    String docId,
+    Map<String, dynamic> data,
+  ) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.phone_callback, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(child: Text("${data['senderName']} muốn bạn gọi lại.")),
+            TextButton(
+              onPressed: () async {
+                // Đánh dấu đã đọc khi nhấn vào nút Gọi trên SnackBar
+                await _db.collection('notifications').doc(docId).update({
+                  'isRead': true,
+                });
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                // Thêm logic mở ứng dụng gọi điện tại đây nếu cần
+              },
+              child: const Text(
+                "GỌI NGAY",
+                style: TextStyle(color: Colors.yellow),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFFFF7F50),
+        duration: const Duration(
+          seconds: 10,
+        ), // Hiển thị lâu hơn để con kịp thấy
+      ),
+    );
   }
 
   void _showEmergencyDialog(
