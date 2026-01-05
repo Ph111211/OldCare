@@ -33,8 +33,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       NotificationService().listenToSOSAlerts(context);
     });
-    // final themeProvider = Provider.of<ThemeProvider>(context);
-    // final bool isDark = themeProvider.isDarkMode;
     return Scaffold(
       // Sử dụng màu nền từ Theme để đồng bộ với Setting Page
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
