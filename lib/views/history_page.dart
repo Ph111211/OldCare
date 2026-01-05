@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:oldcare/services/notification/notification_service.dart';
 // import 'package:oldcare/providers/theme_provider.dart';
-import 'package:provider/provider.dart';
 import '../views/add_schedule.dart';
 import '../views/child-dashboard.dart';
 import '../views/setting_page.dart';
@@ -30,7 +30,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     // // Kiểm tra chế độ Dark Mode hiện tại
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationService().listenToSOSAlerts(context);
+    });
     // final themeProvider = Provider.of<ThemeProvider>(context);
     // final bool isDark = themeProvider.isDarkMode;
     return Scaffold(
