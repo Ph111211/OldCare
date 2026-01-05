@@ -347,28 +347,6 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
     );
   }
 
-  void _showSOSDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Gửi SOS?"),
-        content: const Text(
-          "Hệ thống sẽ gửi cảnh báo khẩn cấp đến con của bạn.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("HỦY"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("GỬI NGAY", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
   String _formatTime(DateTime dt) =>
       "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
 
@@ -385,6 +363,84 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
       return DateTime(_now.year, _now.month, _now.day, hour, minute);
     } catch (e) {
       return _now.add(const Duration(days: 1));
+    }
+  }
+
+  void _showSOSDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Gửi SOS?"),
+        content: const Text(
+          "Hệ thống sẽ gửi cảnh báo khẩn cấp đến con của bạn.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("HỦY"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context); // Đóng dialog ngay
+              await _sendSOSAlert(); // Gọi hàm gửi tín hiệu
+            },
+            child: const Text("GỬI NGAY", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Hàm thực hiện ghi dữ liệu SOS vào Firestore
+  Future<void> _sendSOSAlert() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      // 1. Lấy thông tin childId và tên của Bố/Mẹ
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      final String? childId = userDoc.data()?['child_id'];
+      final String parentName = userDoc.data()?['name'] ?? "Bố/Mẹ";
+
+      if (childId == null || childId.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Không tìm thấy ID người con để gửi SOS!"),
+            ),
+          );
+        }
+        return;
+      }
+
+      // 2. Tạo một bản ghi SOS mới trong Firestore
+      await FirebaseFirestore.instance.collection('notifications').add({
+        'receiverId': childId, // ID của người con nhận thông báo
+        'senderId': user.uid, // ID của Bố/Mẹ gửi
+        'senderName': parentName,
+        'type': 'SOS', // Loại thông báo là SOS
+        'message': '$parentName đang cần hỗ trợ khẩn cấp!',
+        'timestamp': FieldValue.serverTimestamp(),
+        'isRead': false,
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Đã gửi tín hiệu SOS thành công!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Lỗi khi gửi SOS: $e")));
+      }
     }
   }
 }
