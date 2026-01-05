@@ -242,7 +242,7 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
                 label: 'GỌI CON',
                 color: const Color(0xFFFF7F50),
                 icon: Icons.phone_outlined,
-                onTap: () => print("Gọi cho con..."),
+                onTap: () => _sendCallNotification(),
               ),
               const SizedBox(height: 20),
             ],
@@ -441,6 +441,46 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
           context,
         ).showSnackBar(SnackBar(content: Text("Lỗi khi gửi SOS: $e")));
       }
+    }
+  }
+
+  /// Hàm thực hiện gửi thông báo yêu cầu gọi điện
+  Future<void> _sendCallNotification() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      final String? childId = userDoc.data()?['child_id'];
+      final String parentName = userDoc.data()?['name'] ?? "Bố/Mẹ";
+
+      if (childId == null || childId.isEmpty) return;
+
+      // Gửi thông báo loại 'CALL'
+      await FirebaseFirestore.instance.collection('notifications').add({
+        'receiverId': childId,
+        'senderId': user.uid,
+        'senderName': parentName,
+        'type': 'CALL', // Loại thông báo là CALL thay vì SOS
+        'message': '$parentName đang yêu cầu bạn gọi lại.',
+        'timestamp': FieldValue.serverTimestamp(),
+        'isRead': false,
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Đã gửi yêu cầu gọi lại cho con"),
+            backgroundColor: Color(0xFFFF7F50),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print("Lỗi khi gửi yêu cầu gọi: $e");
     }
   }
 }
