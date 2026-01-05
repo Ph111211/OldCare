@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-
+import 'services/notification/notification_service.dart';
 // Import cấu hình Firebase
 import 'firebase_options.dart';
 
@@ -33,6 +33,7 @@ class MyApp extends StatelessWidget {
     // Sử dụng MultiProvider để quản lý tất cả ViewModel ở cấp cao nhất
     return MultiProvider(
       providers: [
+        Provider<NotificationService>(create: (_) => NotificationService()),
         // Khởi tạo ScheduleViewModel (Quản lý lịch hẹn bác sĩ)
         ChangeNotifierProvider(create: (_) => ScheduleViewModel()),
 
