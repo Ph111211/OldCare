@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:oldcare/models/user.model.dart';
+import 'package:oldcare/services/notification/notification_service.dart';
 import 'package:oldcare/viewmodels/schedulePill/schedulePill.viewmodel.dart';
 import 'package:oldcare/viewmodels/schedule/schedule.viewmodel.dart';
 import 'package:oldcare/services/schedulePhill/schedule_Pill.service.dart';
-import 'package:oldcare/services/schedule/schedule.service.dart';
 import 'package:oldcare/views/child-dashboard.dart';
 import 'package:oldcare/views/history_page.dart';
 import 'package:oldcare/views/setting_page.dart';
@@ -27,6 +27,9 @@ class _AddScheduleState extends State<AddSchedule> {
     super.initState();
     _schedulePillViewModel = SchedulePillViewModel(SchedulePillService());
     _scheduleViewModel = ScheduleViewModel();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationService().listenToSOSAlerts(context);
+    });
   }
 
   @override
