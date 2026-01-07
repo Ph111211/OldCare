@@ -29,11 +29,6 @@ class SchedulePillViewModel extends ChangeNotifier {
   bool get isEditing => _isEditing;
   String? _editingSchedulePillId;
 
-  String? _currentParentId;
-  String? _currentChildId;
-
-  // --- READ METHODS (STREAMS) ---
-
   /// Lắng nghe thay đổi real-time theo parentId (Dùng cho Dashboard)
   Future<Stream<List<SchedulePill>>> getSchedulePillsByParentIdStream() async {
     // _currentParentId = parentId;
@@ -42,7 +37,6 @@ class SchedulePillViewModel extends ChangeNotifier {
     final String uid = auth.currentUser!.uid;
     final doc = await firestore.collection('users').doc(uid).get();
     final String? childId = doc.data()!['child_id'];
-    print(uid);
     return _schedulePillService.getSchedulePillsByChildIdStream(childId!);
   }
 
