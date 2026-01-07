@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import '../../../models/user.model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../views/login_page.dart';
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
@@ -15,6 +14,10 @@ class AuthService {
   BuildContext? get context => null;
   // LOGIN
   Future<User_App> login(String email, String password) async {
+    if (!email.endsWith("@gmail.com")) {
+      // Thực hiện hành động nếu email có đuôi @oldcare.com
+      email += "@oldcare.com";
+    }
     final credential = await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,

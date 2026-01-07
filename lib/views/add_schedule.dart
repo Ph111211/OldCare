@@ -1,17 +1,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:oldcare/models/user.model.dart';
+import 'package:oldcare/services/notification/notification_service.dart';
 import 'package:oldcare/viewmodels/schedulePill/schedulePill.viewmodel.dart';
 import 'package:oldcare/viewmodels/schedule/schedule.viewmodel.dart';
 import 'package:oldcare/services/schedulePhill/schedule_Pill.service.dart';
-import 'package:oldcare/services/schedule/schedule.service.dart';
 import 'package:oldcare/views/child-dashboard.dart';
 import 'package:oldcare/views/history_page.dart';
 import 'package:oldcare/views/setting_page.dart';
 import 'package:provider/provider.dart';
 
 class AddSchedule extends StatefulWidget {
-  const AddSchedule({super.key});
+  final bool isDarkMode;
+  const AddSchedule({super.key, this.isDarkMode = false});
 
   @override
   State<AddSchedule> createState() => _AddScheduleState();
@@ -20,12 +21,15 @@ class AddSchedule extends StatefulWidget {
 class _AddScheduleState extends State<AddSchedule> {
   late final SchedulePillViewModel _schedulePillViewModel;
   late final ScheduleViewModel _scheduleViewModel;
-  int _currentIndex = 1;
+  final int _currentIndex = 1;
   @override
   void initState() {
     super.initState();
     _schedulePillViewModel = SchedulePillViewModel(SchedulePillService());
     _scheduleViewModel = ScheduleViewModel();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationService().listenToSOSAlerts(context);
+    });
   }
 
   @override
@@ -36,6 +40,9 @@ class _AddScheduleState extends State<AddSchedule> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subTextColor = isDark ? Colors.grey[400] : Colors.grey[600];
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: _schedulePillViewModel),
@@ -45,14 +52,14 @@ class _AddScheduleState extends State<AddSchedule> {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              _buildHeader(),
+              _buildHeader(isDark, textColor, subTextColor),
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _buildMedicationForm(),
+                    _buildMedicationForm(isDark, textColor),
                     const SizedBox(height: 20),
-                    _buildAppointmentForm(),
+                    _buildAppointmentForm(isDark, textColor),
                   ],
                 ),
               ),
@@ -60,22 +67,30 @@ class _AddScheduleState extends State<AddSchedule> {
             ],
           ),
         ),
-        bottomNavigationBar: _buildBottomNav(),
+        bottomNavigationBar: _buildBottomNav(isDark),
       ),
     );
   }
 
   // ================= HEADER =================
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isDark, Color? textColor, Color? subTextColor) {
     return Container(
       width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDark ? Colors.blue.withOpacity(0.05) : Colors.transparent,
+      ),
       padding: const EdgeInsets.only(top: 60, left: 16, right: 16, bottom: 24),
       child: Row(
         children: [
           CircleAvatar(
             radius: 24,
-            backgroundColor: Colors.blue.withOpacity(0.2),
-            child: const Icon(Icons.person, color: Colors.white),
+            backgroundColor: isDark
+                ? Colors.blue.withOpacity(0.3)
+                : Colors.blue.withOpacity(0.1),
+            child: Icon(
+              Icons.person,
+              color: isDark ? Colors.blue[200] : Colors.blue,
+            ),
           ),
           const SizedBox(width: 12),
           const Expanded(
@@ -99,12 +114,12 @@ class _AddScheduleState extends State<AddSchedule> {
   }
 
   // ================= MEDICATION FORM =================
-  Widget _buildMedicationForm() {
+  Widget _buildMedicationForm(isDark, textColor) {
     return Consumer<SchedulePillViewModel>(
       builder: (context, pillVM, child) {
         return Container(
           padding: const EdgeInsets.all(20),
-          decoration: _cardDecoration(),
+          decoration: _cardDecoration(isDark),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -194,12 +209,12 @@ class _AddScheduleState extends State<AddSchedule> {
   }
 
   // ================= APPOINTMENT FORM =================
-  Widget _buildAppointmentForm() {
+  Widget _buildAppointmentForm(isDark, textColor) {
     return Consumer<ScheduleViewModel>(
       builder: (context, scheduleVM, child) {
         return Container(
           padding: const EdgeInsets.all(20),
-          decoration: _cardDecoration(),
+          decoration: _cardDecoration(isDark),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -310,13 +325,15 @@ class _AddScheduleState extends State<AddSchedule> {
       childId: '',
     );
 
-    final success = await vm.addSchedule(
-      currentUser: currentUser,
-      medicineName: vm.medicineNameController.text,
-      time: vm.selectedTime != null ? _formatTime(vm.selectedTime!) : '',
-      dosage: vm.dosageController.text,
-      frequency: vm.frequencyController.text,
+    // Trong widget của bạn, khi nhấn nút Lưu:
+    final success = await vm.saveSchedulePill(
+      currentUser.uid, // Truyền parentId
+      currentUser.childId, // Truyền childId
     );
+
+    if (success) {
+      Navigator.pop(context); // Đóng màn hình sau khi lưu thành công
+    }
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -332,6 +349,13 @@ class _AddScheduleState extends State<AddSchedule> {
     BuildContext context,
     ScheduleViewModel vm,
   ) async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Vui lòng đăng nhập')));
+      return;
+    }
     final success = await vm.saveSchedule();
 
     if (success && mounted) {
@@ -396,9 +420,9 @@ class _AddScheduleState extends State<AddSchedule> {
   }
 
   // ================= UI COMPONENTS =================
-  BoxDecoration _cardDecoration() {
+  BoxDecoration _cardDecoration(bool isDark) {
     return BoxDecoration(
-      color: Colors.white,
+      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
       borderRadius: BorderRadius.circular(12),
       border: Border.all(color: Colors.grey.shade300),
       boxShadow: [
@@ -531,10 +555,11 @@ class _AddScheduleState extends State<AddSchedule> {
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav(bool isDark) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF2563EB),
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
+      selectedItemColor: const Color(0xFF3B82F6),
       unselectedItemColor: Colors.grey,
       currentIndex: _currentIndex,
       onTap: _onBottomNavTapped,
@@ -575,7 +600,7 @@ class _AddScheduleState extends State<AddSchedule> {
         nextScreen = const HistoryScreen();
         break;
       case 3:
-        nextScreen = const AnTamSettingApp();
+        nextScreen = AnTamSettingApp(isDarkModeI: widget.isDarkMode);
         break;
       default:
         return;

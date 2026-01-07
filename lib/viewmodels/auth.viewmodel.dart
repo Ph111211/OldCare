@@ -74,8 +74,8 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  void logout() async {
-    // MaterialPageRoute(builder: (_) => LoginScreen());
+  Future<void> logout() async {
+    MaterialPageRoute(builder: (_) => LoginScreen());
     await _authService.logout();
     user = null;
     notifyListeners();

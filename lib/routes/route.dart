@@ -6,7 +6,6 @@ import '../views/setting_page.dart';
 import '../views/parent_page.dart';
 import '../views/child-dashboard.dart';
 import 'package:flutter/material.dart';
-import '../views/child-dashboard.dart';
 import '../views/seeall.dart';
 import '../views/widgets/popup_add_schedule.dart';
 import '../views/widgets/modal_delete_schedule.dart';
