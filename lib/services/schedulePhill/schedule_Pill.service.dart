@@ -1,8 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:oldcare/models/schedulePill.model.dart';
-import 'package:oldcare/viewmodels/schedulePill/schedulePill.viewmodel.dart';
 
 class SchedulePillService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
