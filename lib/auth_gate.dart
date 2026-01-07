@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:oldcare/views/child-dashboard.dart';
 import 'package:oldcare/views/parent_page.dart';
 import 'views/login_page.dart';
-import 'views/history_page.dart';
 import 'routes/route.dart';
 
 class AuthGate extends StatelessWidget {
