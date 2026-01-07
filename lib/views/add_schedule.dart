@@ -41,7 +41,6 @@ class _AddScheduleState extends State<AddSchedule> {
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
     final textColor = isDark ? Colors.white : Colors.black87;
     final subTextColor = isDark ? Colors.grey[400] : Colors.grey[600];
     return MultiProvider(
@@ -350,6 +349,13 @@ class _AddScheduleState extends State<AddSchedule> {
     BuildContext context,
     ScheduleViewModel vm,
   ) async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Vui lòng đăng nhập')));
+      return;
+    }
     final success = await vm.saveSchedule();
 
     if (success && mounted) {
