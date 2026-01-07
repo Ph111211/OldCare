@@ -5,15 +5,17 @@ class Schedule {
   final DateTime date;
   final String time;
   final String? note;
-  final String? location; // Thêm dòng này
+  final String? childId;
+  // final String? location; // Thêm dòng này
   final DateTime createdAt;
 
   Schedule({
     required this.title,
     required this.date,
     required this.time,
+    this.childId,
     this.note,
-    this.location, // Thêm dòng này
+    // this.location, // Thêm dòng này
     required this.createdAt,
   });
 
@@ -24,6 +26,7 @@ class Schedule {
       date: _convertToDateTime(map['date']),
       time: map['time'] ?? '',
       note: map['note'],
+      childId: map['childId'] as String?,
       // location: map['location'], // Thêm dòng này
       createdAt: _convertToDateTime(map['createdAt']),
     );
@@ -31,14 +34,15 @@ class Schedule {
 
   // Cập nhật hàm toJson để lưu dữ liệu location lên Firebase
   Map<String, dynamic> toJson() {
-    return {
+    final map = <String, dynamic>{
       'title': title,
       'date': date.toIso8601String(),
       'time': time,
-      'note': note,
-      // 'location': location, // Thêm dòng này
       'createdAt': createdAt.toIso8601String(),
     };
+    if (childId != null) map['childId'] = childId;
+    if (note != null) map['note'] = note;
+    return map;
   }
 
   // Hàm trợ giúp chuyển đổi ngày tháng (đã có từ bước trước)
