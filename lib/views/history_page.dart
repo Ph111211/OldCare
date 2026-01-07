@@ -1,6 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:oldcare/services/notification/notification_service.dart';
-// import 'package:oldcare/providers/theme_provider.dart';
 import '../views/add_schedule.dart';
 import '../views/child-dashboard.dart';
 import '../views/setting_page.dart';
@@ -16,42 +17,96 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen> {
   final int _currentIndex = 2;
 
-  final List<String> _days = [
-    'Thứ 2, 12/11',
-    'Thứ 3, 13/11',
-    'Thứ 4, 14/11',
-    'Thứ 5, 15/11',
-    'Thứ 6, 16/11',
-    'Thứ 7, 17/11',
-    'Chủ Nhật, 18/11',
-  ];
+  // Lấy childId của user hiện tại để lọc dữ liệu thuốc của bố mẹ
+  Future<String?> _getChildId() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+    // final doc = await FirebaseFirestore.instance
+    //     .collection('users')
+    //     .doc(user.uid)
+    //     .get();
+    // print(user.uid);
+    return user.uid; // Đảm bảo field này khớp với DB của bạn
+  }
 
   @override
-  Widget build(BuildContext context) {
-    // // Kiểm tra chế độ Dark Mode hiện tại
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+  void initState() {
+    super.initState();
+    // Bắt đầu lắng nghe SOS và Call ngay khi vào màn hình
     WidgetsBinding.instance.addPostFrameCallback((_) {
       NotificationService().listenToSOSAlerts(context);
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDark = widget.isDarkMode;
+
     return Scaffold(
-      // Sử dụng màu nền từ Theme để đồng bộ với Setting Page
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Column(
-        children: <Widget>[
-          _buildHeader(isDark),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
+      backgroundColor: isDark
+          ? const Color(0xFF111827)
+          : const Color(0xFFF9FAFB),
+      body: FutureBuilder<String?>(
+        future: _getChildId(),
+        builder: (context, idSnapshot) {
+          if (idSnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final childId = idSnapshot.data ?? "";
+          print(childId);
+
+          return StreamBuilder<QuerySnapshot>(
+            // Lấy lịch sử thuốc dựa trên childId
+            stream: FirebaseFirestore.instance
+                .collection('schedule_pills')
+                .where('childId', isEqualTo: childId)
+                .orderBy(
+                  'updatedAt',
+                  descending: true,
+                ) // Sắp xếp mới nhất lên đầu
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError)
+                return Center(child: Text("Lỗi: ${snapshot.error}"));
+              if (!snapshot.hasData)
+                return const Center(child: CircularProgressIndicator());
+
+              final docs = snapshot.data!.docs;
+              print(docs);
+
+              // Tính toán hiệu suất tuân thủ
+              int completed = docs
+                  .where((d) => d['status'] == 'Completed')
+                  .length;
+              int total = docs.length;
+              double complianceRate = total > 0 ? (completed / total) * 100 : 0;
+
+              return Column(
                 children: <Widget>[
-                  _buildComplianceCard(isDark),
-                  const SizedBox(height: 20),
-                  _buildHistoryList(isDark),
+                  _buildHeader(isDark),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: <Widget>[
+                          _buildComplianceCard(
+                            isDark,
+                            complianceRate,
+                            total,
+                            completed,
+                          ),
+                          const SizedBox(height: 20),
+                          _buildHistoryList(isDark, docs),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
-              ),
-            ),
-          ),
-        ],
+              );
+            },
+          );
+        },
       ),
       bottomNavigationBar: _buildBottomNav(),
     );
@@ -62,19 +117,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
       width: double.infinity,
       padding: const EdgeInsets.only(top: 60, left: 16, right: 16, bottom: 24),
       decoration: BoxDecoration(
-        // Giữ màu gradient đặc trưng hoặc làm tối đi trong Dark Mode
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: isDark
-              ? <Color>[
-                  const Color(0xFF1E3A8A),
-                  const Color(0xFF111827),
-                ] // Dark Blue/Gray
-              : <Color>[
-                  const Color(0xFF2563EB),
-                  const Color(0xFF1D4ED8),
-                ], // Primary Blue
+              ? [const Color(0xFF1E3A8A), const Color(0xFF111827)]
+              : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
         ),
       ),
       child: Row(
@@ -98,22 +146,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 ),
                 Text(
-                  'Chăm sóc Cha Mẹ',
+                  'Lịch sử chăm sóc',
                   style: TextStyle(color: Color(0xFFDBEAFE), fontSize: 13),
                 ),
               ],
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.white),
-            onPressed: () {},
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildComplianceCard(bool isDark) {
+  Widget _buildComplianceCard(
+    bool isDark,
+    double rate,
+    int total,
+    int completed,
+  ) {
+    Color progressColor = rate >= 80
+        ? Colors.green
+        : (rate >= 50 ? Colors.orange : Colors.red);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -121,35 +174,41 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(
-            'Thống kê tuân thủ',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF333333),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            height: 120,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              // Màu nền biểu đồ nhẹ nhàng hơn trong Dark Mode
-              gradient: LinearGradient(
-                colors: isDark
-                    ? <Color>[const Color(0xFF374151), const Color(0xFF1F2937)]
-                    : <Color>[const Color(0xFFE6F2FF), const Color(0xFFF0FFF0)],
-              ),
-            ),
-            child: Center(
-              child: Text(
-                'Biểu đồ tuân thủ theo tuần/tháng',
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Hiệu suất tuân thủ',
                 style: TextStyle(
-                  color: isDark ? Colors.grey[400] : const Color(0xFF888888),
-                  fontSize: 13,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black87,
                 ),
               ),
+              Text(
+                '${rate.toStringAsFixed(0)}%',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: progressColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: total > 0 ? rate / 100 : 0,
+            backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
+            color: progressColor,
+            minHeight: 10,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Đã hoàn thành: $completed / Tổng số: $total liều',
+            style: TextStyle(
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+              fontSize: 13,
             ),
           ),
         ],
@@ -157,7 +216,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildHistoryList(bool isDark) {
+  Widget _buildHistoryList(bool isDark, List<QueryDocumentSnapshot> docs) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -166,21 +225,39 @@ class _HistoryScreenState extends State<HistoryScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'Lịch sử 7 ngày',
+            'Chi tiết uống thuốc',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF333333),
+              color: isDark ? Colors.white : Colors.black87,
             ),
           ),
           const SizedBox(height: 12),
-          ..._days.map((String day) => _buildHistoryItem(day, isDark)),
+          if (docs.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(child: Text("Chưa có dữ liệu lịch sử")),
+            ),
+          ...docs.map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return _buildHistoryItem(
+              data['medicineName'] ?? "Không tên",
+              data['time'] ?? "--:--",
+              data['status'] ?? "Pending",
+              isDark,
+            );
+          }).toList(),
         ],
       ),
     );
   }
 
-  Widget _buildHistoryItem(String dayLabel, bool isDark) {
+  Widget _buildHistoryItem(
+    String name,
+    String time,
+    String status,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
@@ -197,50 +274,59 @@ class _HistoryScreenState extends State<HistoryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                dayLabel,
+                name,
                 style: TextStyle(
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   fontSize: 15,
-                  color: isDark ? Colors.grey[300] : Colors.black,
+                  color: isDark ? Colors.white : Colors.black,
                 ),
               ),
-              const SizedBox(height: 6),
-              Row(
-                children: <Widget>[
-                  _buildStatusChip('Sáng', isDark),
-                  const SizedBox(width: 6),
-                  _buildStatusChip('Trưa', isDark),
-                  const SizedBox(width: 6),
-                  _buildStatusChip('Tối', isDark),
-                ],
+              const SizedBox(height: 4),
+              Text(
+                "Giờ: $time",
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                ),
               ),
             ],
           ),
-          const Text(
-            '100% tuân thủ',
-            style: TextStyle(
-              color: Color(0xFF4ADE80), // Xanh lá sáng hơn cho Dark Mode
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
+          _buildStatusBadge(status),
         ],
       ),
     );
   }
 
-  Widget _buildStatusChip(String label, bool isDark) {
+  Widget _buildStatusBadge(String status) {
+    Color color;
+    String text;
+    switch (status) {
+      case 'Completed':
+        color = Colors.green;
+        text = "Đã uống";
+        break;
+      case 'Missed':
+        color = Colors.red;
+        text = "Bỏ lỡ";
+        break;
+      default:
+        color = Colors.orange;
+        text = "Chờ uống";
+    }
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF064E3B) : const Color(0xFFD4F5D4),
-        borderRadius: BorderRadius.circular(4),
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.5)),
       ),
       child: Text(
-        label,
+        text,
         style: TextStyle(
-          color: isDark ? const Color(0xFF34D399) : const Color(0xFF1A7F1A),
-          fontSize: 11,
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
@@ -249,13 +335,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
   BoxDecoration _cardDecoration(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return BoxDecoration(
-      color: Theme.of(context).cardColor,
+      color: isDark ? const Color(0xFF1F2937) : Colors.white,
       borderRadius: BorderRadius.circular(12),
-      boxShadow: <BoxShadow>[
+      boxShadow: [
         BoxShadow(
-          color: isDark
-              ? Colors.black.withOpacity(0.3)
-              : Colors.black.withOpacity(0.05),
+          color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
           blurRadius: 4,
           offset: const Offset(0, 1),
         ),
@@ -266,12 +350,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Theme.of(context).cardColor, // Đồng bộ màu nền nav
+      backgroundColor: widget.isDarkMode
+          ? const Color(0xFF1F2937)
+          : Colors.white,
       selectedItemColor: const Color(0xFF2563EB),
       unselectedItemColor: Colors.grey,
       currentIndex: _currentIndex,
       onTap: _onBottomNavTapped,
-      items: const <BottomNavigationBarItem>[
+      items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.dashboard),
           label: 'Tổng quan',
@@ -288,28 +374,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   void _onBottomNavTapped(int index) {
     if (index == _currentIndex) return;
-
     Widget nextScreen;
     switch (index) {
       case 0:
-        // Cần cập nhật ChildDashboard để nhận isDarkMode
         nextScreen = ChildDashboard(isDarkMode: widget.isDarkMode);
         break;
       case 1:
-        // Cần cập nhật AddSchedule để nhận isDarkMode
         nextScreen = AddSchedule();
         break;
       case 2:
         nextScreen = HistoryScreen(isDarkMode: widget.isDarkMode);
         break;
       case 3:
-        // 3. Truyền giá trị hiện tại sang Setting Page
         nextScreen = AnTamSettingApp(isDarkModeI: widget.isDarkMode);
         break;
       default:
         return;
     }
-
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => nextScreen),
