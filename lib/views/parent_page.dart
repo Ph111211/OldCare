@@ -77,8 +77,9 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
   }
 
   MedicationNotice _getNotice(List<SchedulePill> pills) {
-    if (pills.isEmpty)
+    if (pills.isEmpty) {
       return MedicationNotice(message: "", color: const Color(0xFF4B5563));
+    }
 
     for (var pill in pills) {
       if (pill.status == "Completed") continue;
@@ -233,8 +234,9 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
                 color: const Color(0xFF22C55E),
                 icon: Icons.check_circle_outline,
                 onTap: () {
-                  if (notice.currentPillId != null)
+                  if (notice.currentPillId != null) {
                     vm.confirmPillTaken(notice.currentPillId!);
+                  }
                 },
               ),
               const SizedBox(height: 20),
