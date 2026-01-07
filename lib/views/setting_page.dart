@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:oldcare/services/auth/auth_service.dart';
-import 'package:provider/provider.dart';
 import '../viewmodels/auth.viewmodel.dart';
 import '../views/add_schedule.dart';
 import '../views/child-dashboard.dart';
-import '../views/setting_page.dart';
 import '../views/history_page.dart';
 
 // --- 1. ROOT WIDGET ---
