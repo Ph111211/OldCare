@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:oldcare/models/schedule.model.dart';
 
 class ScheduleService {
@@ -22,8 +23,12 @@ class ScheduleService {
 
   /// READ - Lấy tất cả lịch hẹn (Sử dụng fromMap an toàn)
   Future<List<Schedule>> getAllSchedules() async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    final childId = firebaseUser?.uid;
     try {
       QuerySnapshot<Map<String, dynamic>> snapshot = await _schedulesRef
+          .where('childId', isEqualTo: childId)
           .orderBy('date', descending: false)
           .get();
 
@@ -35,11 +40,20 @@ class ScheduleService {
 
   /// READ - Stream lấy tất cả lịch hẹn (Real-time & xử lý lỗi subtype)
   Stream<List<Schedule>> getSchedulesStream() {
-    return _schedulesRef.orderBy('date', descending: false).snapshots().map((
-      snapshot,
-    ) {
-      return snapshot.docs.map((doc) => Schedule.fromMap(doc.data())).toList();
-    });
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    final childId = firebaseUser?.uid;
+    // print("userId:" + childId!);
+    return _schedulesRef
+        .where('childId', isEqualTo: childId)
+        .orderBy('date', descending: false)
+        .snapshots()
+        .map((snapshot) {
+          print(snapshot.docs);
+          return snapshot.docs
+              .map((doc) => Schedule.fromMap(doc.data()))
+              .toList();
+        });
   }
 
   /// READ - Lấy lịch hẹn theo ngày
