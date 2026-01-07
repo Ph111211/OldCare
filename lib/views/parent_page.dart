@@ -877,8 +877,8 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
-              await _sendSOSAlert();
+              Navigator.pop(context); // Đóng dialog ngay
+              await _sendSOSAlert(); // Gọi hàm gửi tín hiệu
             },
             child: const Text(
               "GỬI NGAY",
@@ -898,7 +898,7 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
           .collection('users')
           .doc(user.uid)
           .get();
-      final String? childId = userDoc.data()?['childId'];
+      final String? childId = userDoc.data()?['child_id'];
       if (childId == null) return;
 
       await FirebaseFirestore.instance.collection('notifications').add({
@@ -929,7 +929,7 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
           .collection('users')
           .doc(user.uid)
           .get();
-      final String? childId = userDoc.data()?['childId'];
+      final String? childId = userDoc.data()?['child_id'];
       if (childId == null) return;
 
       await FirebaseFirestore.instance.collection('notifications').add({
