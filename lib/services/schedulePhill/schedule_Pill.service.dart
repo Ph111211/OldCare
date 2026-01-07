@@ -4,7 +4,7 @@ import 'package:oldcare/models/schedulePill.model.dart';
 class SchedulePillService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collection = 'schedule_pills';
-
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
   // Reference đến collection với kiểu Map cụ thể để tránh lỗi subtype
   CollectionReference<Map<String, dynamic>> get _schedulePillsRef =>
       _firestore.collection(_collection);
@@ -22,6 +22,16 @@ class SchedulePillService {
     }
   }
 
+  Future<void> updatePillStatusWithDate(
+    String id,
+    String status,
+    String lastDate,
+  ) async {
+    await _db.collection('schedule_pills').doc(id).update({
+      'status': status,
+      'lastTakenDate': lastDate, // Trường để kiểm tra reset mỗi ngày
+    });
+  }
   // Future<void> _saveMedicationSchedule(
   //   BuildContext context,
   //   SchedulePillViewModel vm,
