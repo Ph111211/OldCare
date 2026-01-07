@@ -57,4 +57,31 @@ class SchedulePill {
     if (value is String) return DateTime.tryParse(value);
     return null;
   }
+
+  DateTime _parseTimeStringToToday(String timeString, String frequency) {
+    try {
+      final parts = timeString.split(' '); // Ví dụ: ["08:00", "AM"]
+      final hm = parts[0].split(':');
+      int hour = int.parse(hm[0]);
+      int minute = int.parse(hm[1]);
+
+      if (parts.length > 1) {
+        if (parts[1].toUpperCase() == 'PM' && hour != 12) hour += 12;
+        if (parts[1].toUpperCase() == 'AM' && hour == 12) hour = 0;
+      }
+
+      DateTime now = DateTime.now();
+
+      // Nếu tần suất là hàng ngày, chúng ta luôn lấy ngày-tháng-năm hiện tại
+      if (frequency.contains("Hàng ngày") ||
+          frequency.toLowerCase() == "daily") {
+        return DateTime(now.year, now.month, now.day, hour, minute);
+      }
+
+      // Nếu không phải hàng ngày, bạn có thể dựa vào createdAt để tính toán (logic tùy chọn)
+      return DateTime(now.year, now.month, now.day, hour, minute);
+    } catch (e) {
+      return DateTime.now().add(const Duration(days: 1)); // Tránh crash
+    }
+  }
 }
