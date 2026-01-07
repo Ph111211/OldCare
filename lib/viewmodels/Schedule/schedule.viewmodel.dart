@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:oldcare/models/schedule.model.dart';
+import 'package:oldcare/models/user.model.dart';
 import 'package:oldcare/services/schedule/schedule.service.dart';
 
 class ScheduleViewModel extends ChangeNotifier {
@@ -67,6 +69,16 @@ class ScheduleViewModel extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    final currentUser = User_App(
+      uid: firebaseUser!.uid,
+      email: firebaseUser?.email ?? '',
+      role: '',
+      name: '',
+      phone: '',
+      childId: '',
+    );
 
     _setLoading(true);
     try {
@@ -83,6 +95,7 @@ class ScheduleViewModel extends ChangeNotifier {
         title: titleController.text.trim(),
         date: finalDateTime,
         time: _formatTimeOfDay(selectedTime),
+        childId: currentUser.uid,
         note: noteController.text.trim().isEmpty
             ? null
             : noteController.text.trim(),
