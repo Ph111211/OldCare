@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:oldcare/models/schedulePill.model.dart';
-import 'package:oldcare/models/user.model.dart';
 import 'package:oldcare/services/schedulePhill/schedule_Pill.service.dart';
 
 class SchedulePillViewModel extends ChangeNotifier {
@@ -17,7 +16,7 @@ class SchedulePillViewModel extends ChangeNotifier {
   TimeOfDay? selectedTime;
 
   // --- STATE MANAGEMENT ---
-  List<SchedulePill> _schedulePills = [];
+  final List<SchedulePill> _schedulePills = [];
   List<SchedulePill> get schedulePills => _schedulePills;
 
   bool _isLoading = false;
@@ -38,10 +37,10 @@ class SchedulePillViewModel extends ChangeNotifier {
   /// Lắng nghe thay đổi real-time theo parentId (Dùng cho Dashboard)
   Future<Stream<List<SchedulePill>>> getSchedulePillsByParentIdStream() async {
     // _currentParentId = parentId;
-    final _auth = FirebaseAuth.instance;
-    final _firestore = FirebaseFirestore.instance;
-    final String uid = _auth.currentUser!.uid;
-    final doc = await _firestore.collection('users').doc(uid).get();
+    final auth = FirebaseAuth.instance;
+    final firestore = FirebaseFirestore.instance;
+    final String uid = auth.currentUser!.uid;
+    final doc = await firestore.collection('users').doc(uid).get();
     final String? childId = doc.data()!['child_id'];
     print(uid);
     return _schedulePillService.getSchedulePillsByChildIdStream(childId!);
@@ -162,8 +161,9 @@ class SchedulePillViewModel extends ChangeNotifier {
   }
 
   String? validateForm() {
-    if (medicineNameController.text.trim().isEmpty)
+    if (medicineNameController.text.trim().isEmpty) {
       return 'Vui lòng nhập tên thuốc';
+    }
     if (selectedTime == null) return 'Vui lòng chọn thời gian';
     if (dosageController.text.trim().isEmpty) return 'Vui lòng nhập liều lượng';
     return null;
@@ -195,10 +195,12 @@ class SchedulePillViewModel extends ChangeNotifier {
       int hour = int.parse(hourMinute[0]);
       int minute = int.parse(hourMinute[1]);
 
-      if (parts.length > 1 && parts[1].toUpperCase() == 'PM' && hour != 12)
+      if (parts.length > 1 && parts[1].toUpperCase() == 'PM' && hour != 12) {
         hour += 12;
-      if (parts.length > 1 && parts[1].toUpperCase() == 'AM' && hour == 12)
+      }
+      if (parts.length > 1 && parts[1].toUpperCase() == 'AM' && hour == 12) {
         hour = 0;
+      }
 
       return TimeOfDay(hour: hour, minute: minute);
     } catch (e) {
