@@ -109,9 +109,24 @@ class SchedulePillViewModel extends ChangeNotifier {
 
   /// Xác nhận đã uống thuốc (Cập nhật trạng thái thành Completed)
   /// Giúp Badge chuyển sang màu xanh trên Dashboard
-  Future<void> confirmPillTaken(String id) async {
+  Future<void> confirmPillTaken(String id, {required String frequency}) async {
     try {
-      await _schedulePillService.updatePillStatus(id, "Completed");
+      // 1. Lấy ngày hiện tại dưới dạng chuỗi YYYY-MM-DD để so sánh dễ dàng
+      String today = DateTime.now().toIso8601String().split('T')[0];
+
+      if (frequency.contains("Hàng ngày")) {
+        // 2. Với thuốc hàng ngày, ta cập nhật trạng thái kèm theo ngày uống cuối cùng
+        // Điều này giúp máy Parent biết rằng liều của "Ngày hôm nay" đã xong
+        await _schedulePillService.updatePillStatusWithDate(
+          id,
+          "Completed",
+          today,
+        );
+      } else {
+        // Với thuốc uống 1 lần, chỉ cần đổi trạng thái là xong
+        await _schedulePillService.updatePillStatus(id, "Completed");
+      }
+
       _errorMessage = null;
       notifyListeners();
     } catch (e) {
