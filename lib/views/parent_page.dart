@@ -567,34 +567,102 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
       "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
 
   /// Chuyển đổi chuỗi thời gian (vd: "08:00 AM") thành DateTime của ngày hôm nay
-  DateTime _parseTimeStringToToday(String timeString) {
+  DateTime _parseTimeStringToToday(String timeString, String frequency) {
     try {
-      final parts = timeString.split(' ');
+      final parts = timeString.split(' '); // Ví dụ: ["08:00", "AM"]
       final hm = parts[0].split(':');
       int hour = int.parse(hm[0]);
       int minute = int.parse(hm[1]);
+
       if (parts.length > 1) {
         if (parts[1].toUpperCase() == 'PM' && hour != 12) hour += 12;
         if (parts[1].toUpperCase() == 'AM' && hour == 12) hour = 0;
       }
-      return DateTime(_now.year, _now.month, _now.day, hour, minute);
+
+      DateTime now = DateTime.now();
+
+      // Nếu tần suất là hàng ngày, chúng ta luôn lấy ngày-tháng-năm hiện tại
+      if (frequency.contains("Hàng ngày") ||
+          frequency.toLowerCase() == "daily") {
+        return DateTime(now.year, now.month, now.day, hour, minute);
+      }
+
+      // Nếu không phải hàng ngày, bạn có thể dựa vào createdAt để tính toán (logic tùy chọn)
+      return DateTime(now.year, now.month, now.day, hour, minute);
     } catch (e) {
-      return _now.add(const Duration(days: 1));
+      return DateTime.now().add(const Duration(days: 1)); // Tránh crash
     }
   }
 
   /// Logic xác định trạng thái nhắc thuốc dựa trên thời gian thực
+  // MedicationNotice _getNotice(List<SchedulePill> pills) {
+  //   if (pills.isEmpty)
+  //     return MedicationNotice(message: "", color: const Color(0xFF4B5563));
+
+  //   for (var pill in pills) {
+  //     DateTime pillTime = _parseTimeStringToToday(pill.time, pill.frequency);
+  //     int difference = pillTime.difference(_now).inMinutes;
+
+  //     // ĐÃ QUÁ GIỜ (Trong vòng 60 phút đổ lại)
+  //     if (difference < 0 && difference >= -60) {
+  //       return MedicationNotice(
+  //         message: "BẠN ĐÃ QUÊN UỐNG THUỐC!",
+  //         color: const Color(0xFFEF4444),
+  //         currentPillId: pill.id,
+  //         banner: _buildNotificationBanner(
+  //           title: "Đã quá giờ",
+  //           medicine: pill.medicineName,
+  //           time: pill.time,
+  //           dosage: pill.dosage,
+  //           bgColor: const Color(0xFFEF4444),
+  //         ),
+  //       );
+  //     }
+  //     // SẮP ĐẾN GIỜ HOẶC ĐÃ ĐẾN GIỜ (Trong vòng 30 phút tới)
+  //     else if (difference >= 0 && difference <= 30) {
+  //       bool isNow = (difference == 0);
+  //       return MedicationNotice(
+  //         message: isNow
+  //             ? "ĐẾN GIỜ UỐNG THUỐC RỒI!"
+  //             : "Chuẩn bị uống thuốc trong $difference phút",
+  //         color: isNow ? Colors.green : Colors.blueAccent,
+  //         currentPillId: pill.id,
+  //         banner: _buildNotificationBanner(
+  //           title: isNow ? "Đã đến giờ" : "Sắp đến giờ",
+  //           medicine: pill.medicineName,
+  //           time: pill.time,
+  //           dosage: pill.dosage,
+  //           bgColor: isNow ? const Color(0xFF22C55E) : const Color(0xFF3B82F6),
+  //         ),
+  //       );
+  //     }
+  //   }
+  //   return MedicationNotice(message: "", color: const Color(0xFF4B5563));
+  // }
   MedicationNotice _getNotice(List<SchedulePill> pills) {
-    if (pills.isEmpty)
+    if (pills.isEmpty) {
       return MedicationNotice(message: "", color: const Color(0xFF4B5563));
+    }
+
+    // Lấy chuỗi ngày hôm nay (định dạng YYYY-MM-DD) để so sánh
+    String today = DateTime.now().toIso8601String().split('T')[0];
 
     for (var pill in pills) {
-      if (pill.status == "Completed") continue;
+      // KIỂM TRA LỖI: Nếu là thuốc hàng ngày và đã uống trong hôm nay rồi thì bỏ qua không hiển thị nhắc nhở
+      bool isCompletedToday =
+          (pill.status == "Completed" && pill.lastTakenDate == today);
 
-      DateTime pillTime = _parseTimeStringToToday(pill.time);
+      // Nếu là thuốc uống 1 lần (không phải hàng ngày) và đã Completed thì cũng ẩn
+      bool isOnceCompleted =
+          (pill.status == "Completed" && !pill.frequency.contains("Hàng ngày"));
+
+      if (isCompletedToday || isOnceCompleted) continue;
+
+      // Logic tính toán thời gian như cũ
+      DateTime pillTime = _parseTimeStringToToday(pill.time, pill.frequency);
       int difference = pillTime.difference(_now).inMinutes;
 
-      // ĐÃ QUÁ GIỜ (Trong vòng 60 phút đổ lại)
+      // Hiển thị Banner nếu thuốc sắp đến giờ (-60 đến +30 phút)
       if (difference < 0 && difference >= -60) {
         return MedicationNotice(
           message: "BẠN ĐÃ QUÊN UỐNG THUỐC!",
@@ -608,9 +676,7 @@ class _GiaoDiNChNhState extends State<GiaoDiNChNh> {
             bgColor: const Color(0xFFEF4444),
           ),
         );
-      }
-      // SẮP ĐẾN GIỜ HOẶC ĐÃ ĐẾN GIỜ (Trong vòng 30 phút tới)
-      else if (difference >= 0 && difference <= 30) {
+      } else if (difference >= 0 && difference <= 30) {
         bool isNow = (difference == 0);
         return MedicationNotice(
           message: isNow
