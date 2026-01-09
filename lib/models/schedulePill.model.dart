@@ -8,8 +8,11 @@ class SchedulePill {
   final String frequency;
   final String parentId;
   final String childId;
+  final String lastTakenDate;
   final String? status; // Trạng thái: "Completed", "Upcoming", "Missed"
   final DateTime? createdAt;
+  final DateTime? updatedAt;
+  // final DateTime? lastTakenDate;
 
   SchedulePill({
     required this.id,
@@ -19,8 +22,11 @@ class SchedulePill {
     required this.frequency,
     required this.parentId,
     required this.childId,
+    required this.lastTakenDate,
     this.status,
     this.createdAt,
+    this.updatedAt,
+    // this.lastTakenDate,
   });
 
   /// Factory chuyển đổi từ Firestore Map sang Object
@@ -32,6 +38,8 @@ class SchedulePill {
       dosage: map['dosage'] ?? '',
       frequency: map['frequency'] ?? '',
       parentId: map['parentId'] ?? '',
+      lastTakenDate: map['lastTakenDate'] ?? 'today',
+      // lastTakenDate: map['lastTakenDate'],
       childId: map['childId'] ?? '',
       status: map['status'], // Phải có trường này để hiển thị Badge
     );
@@ -47,7 +55,10 @@ class SchedulePill {
       'parentId': parentId,
       'childId': childId,
       'status': status ?? 'Upcoming', // Mặc định là chưa đến giờ
+      'lastTakenDate': lastTakenDate,
+
       'createdAt': createdAt ?? FieldValue.serverTimestamp(),
+      'updatedAt': updatedAt ?? FieldValue.serverTimestamp(),
     };
   }
 
