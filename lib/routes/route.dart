@@ -23,6 +23,5 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/dashboard': (context) => const ChildDashboard(),
   '/child_dashboard': (context) => const ChildDashboard(),
   '/see_all_medication': (context) => const SeeAllMedicationPage(),
-  '/popup_add_schedule': (context) => const PopupAddSchedule(),
   '/modal_delete_schedule': (context) => const ModalDeleteSchedule(),
 };

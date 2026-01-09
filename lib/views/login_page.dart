@@ -106,12 +106,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 32),
 
                       // Input Email
-                      _buildLabel('Email'),
+                      _buildLabel('Email hoặc Số điện thoại'),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _emailController,
                         decoration: _inputDecoration(
-                          hint: 'your.email@example.com',
+                          hint: 'your.email@example.com hoặc 091234456',
                           prefixIcon: Icons.email_outlined,
                         ),
                         keyboardType: TextInputType.emailAddress,

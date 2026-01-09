@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'services/notification/notification_service.dart';
+import 'package:intl/date_symbol_data_local.dart'; // Thêm dòng này để xử lý Locale
+
 // Import cấu hình Firebase
 import 'firebase_options.dart';
 
 // Import các Services
+import 'package:oldcare/services/notification/notification_service.dart';
 import 'package:oldcare/services/schedulePhill/schedule_Pill.service.dart';
 
 // Import các ViewModels
 import 'package:oldcare/viewmodels/Schedule/schedule.viewmodel.dart';
 import 'package:oldcare/viewmodels/schedulePill/schedulePill.viewmodel.dart';
 
-// Import Gate kiểm tra đăng nhập
+// Import Gate và các Trang cần thiết
 import 'auth_gate.dart';
+import 'views/seeall.dart'; // Import trang xem tất cả
 
 void main() async {
-  // Đảm bảo Flutter binding được khởi tạo trước khi gọi Firebase
+  // 1. Đảm bảo Flutter binding được khởi tạo
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Khởi tạo Firebase với cấu hình theo nền tảng
+  // 2. Khởi tạo Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // 3. Khởi tạo định dạng ngày tháng tiếng Việt để fix lỗi LocaleDataException
+  await initializeDateFormatting('vi', null);
 
   runApp(const MyApp());
 }
@@ -30,15 +36,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Sử dụng MultiProvider để quản lý tất cả ViewModel ở cấp cao nhất
     return MultiProvider(
       providers: [
         Provider<NotificationService>(create: (_) => NotificationService()),
-        // Khởi tạo ScheduleViewModel (Quản lý lịch hẹn bác sĩ)
         ChangeNotifierProvider(create: (_) => ScheduleViewModel()),
-
-        // Khởi tạo SchedulePillViewModel (Quản lý lịch uống thuốc)
-        // Cần truyền Service vào constructor để ViewModel hoạt động
         ChangeNotifierProvider(
           create: (_) => SchedulePillViewModel(SchedulePillService()),
         ),
@@ -48,12 +49,15 @@ class MyApp extends StatelessWidget {
         title: 'An Tâm Care',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2563EB), // Màu xanh thương hiệu
-          ),
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2563EB)),
           fontFamily: 'Roboto',
         ),
-        // AuthGate sẽ điều hướng người dùng dựa trên trạng thái đăng nhập
+
+        // Cấu hình Route để sử dụng Navigator.pushNamed
+        routes: {
+          '/see_all_medication': (context) => const SeeAllMedicationPage(),
+        },
+
         home: const AuthGate(),
       ),
     );

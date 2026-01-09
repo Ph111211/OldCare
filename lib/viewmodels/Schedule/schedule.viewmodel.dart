@@ -73,7 +73,7 @@ class ScheduleViewModel extends ChangeNotifier {
 
     final currentUser = User_App(
       uid: firebaseUser!.uid,
-      email: firebaseUser?.email ?? '',
+      email: firebaseUser.email ?? '',
       role: '',
       name: '',
       phone: '',
