@@ -1,4 +1,4 @@
-# oldcare  Phu
+# old care project branch Phu 's
 
 Mục tiêu của dự án là giải quyết nỗi lo lắng thường trực của người con ("Không biết bố mẹ ở nhà có ổn không? Đã uống thuốc chưa?") và sự phức tạp về công nghệ đối với người già.
 
