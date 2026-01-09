@@ -240,15 +240,16 @@ class _PopupAddScheduleState extends State<PopupAddSchedule> {
             children: [
               Expanded(
                 child: _buildBtn("Lưu", Colors.blue, Colors.white, () async {
-                  // THỰC HIỆN CẬP NHẬT
-                  // final childID
-                  // await vm.saveSchedulePill(
-                  //   id: widget.pill.id,
-                  //   medicineName: _nameCtrl.text,
-                  //   time: _time,
-                  //   dosage: _dosageCtrl.text,
-                  //   frequency: _freq,
-                  // );
+                  await vm.updateSchedulePill(
+                    id: widget.pill.id, // Truyền ID để thực hiện Update
+                    childId: widget.pill.childId, // Truyền childId theo yêu cầu
+                    parentId:
+                        widget.pill.parentId, // Truyền parentId theo yêu cầu
+                    medicineName: _nameCtrl.text,
+                    time: _time,
+                    dosage: _dosageCtrl.text,
+                    frequency: _freq,
+                  );
                   Navigator.pop(context);
                 }),
               ),

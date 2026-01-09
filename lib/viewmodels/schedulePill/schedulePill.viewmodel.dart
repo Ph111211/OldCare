@@ -61,6 +61,39 @@ class SchedulePillViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> updateSchedulePill({
+    String? id,
+    required String childId,
+    required String parentId,
+    required String medicineName,
+    required String time,
+    required String dosage,
+    required String frequency,
+  }) async {
+    try {
+      final data = {
+        'childId': childId,
+        'parentId': parentId,
+        'medicineName': medicineName,
+        'time': time,
+        'dosage': dosage,
+        'frequency': frequency,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      final FirebaseFirestore _db = FirebaseFirestore.instance;
+      if (id != null && id.isNotEmpty) {
+        // Sử dụng _db đã khai báo để update
+        await _db.collection('schedule_pills').doc(id).update(data);
+      } else {
+        data['status'] = 'Upcoming';
+        data['createdAt'] = FieldValue.serverTimestamp();
+        await _db.collection('schedule_pills').add(data);
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Lỗi saveSchedulePill: $e");
+    }
+  }
   // --- WRITE METHODS (SAVE / UPDATE / DELETE) ---
 
   /// Tạo hoặc cập nhật lịch uống thuốc
