@@ -84,6 +84,7 @@ class SchedulePillViewModel extends ChangeNotifier {
         frequency: frequencyController.text.trim(),
         parentId: parentId,
         childId: childId,
+        lastTakenDate: 'today',
         // Khi tạo mới, mặc định trạng thái là Upcoming
         status: _isEditing ? null : "Upcoming",
       );
