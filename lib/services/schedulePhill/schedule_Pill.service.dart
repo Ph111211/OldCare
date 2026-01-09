@@ -27,9 +27,11 @@ class SchedulePillService {
     String status,
     String lastDate,
   ) async {
+    print(id);
     await _db.collection('schedule_pills').doc(id).update({
       'status': status,
       'lastTakenDate': lastDate, // Trường để kiểm tra reset mỗi ngày
+      'updatedAt': FieldValue.serverTimestamp(),
     });
   }
   // Future<void> _saveMedicationSchedule(
